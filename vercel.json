@@ -1,10 +1,7 @@
 {
   "version": 2,
+  "public": false,
   "builds": [
-    {
-      "src": "server/index.js",
-      "use": "@vercel/node"
-    },
     {
       "src": "client/package.json",
       "use": "@vercel/static-build",
@@ -12,6 +9,10 @@
         "buildCommand": "npm run build",
         "distDir": "build"
       }
+    },
+    {
+      "src": "server/index.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -27,8 +28,5 @@
       "src": "/(.*)",
       "dest": "client/build/$1"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }

@@ -3,18 +3,23 @@
   "buildCommand": "npm install && cd client && npm install && npm run build && cd ..",
   "builds": [
     {
-      "src": "api/index.js",
+      "src": "api.js",
       "use": "@vercel/node",
       "config": {
         "maxLambdaSize": "50mb",
-        "includeFiles": "client/build/**"
+        "includeFiles": [
+          "client/build/**",
+          "server/**",
+          "package.json",
+          "package-lock.json"
+        ]
       }
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "api/index.js"
+      "dest": "api.js"
     }
   ],
   "env": {

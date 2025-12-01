@@ -1,0 +1,10 @@
+.git
+.gitignore
+README.md
+node_modules
+npm-debug.log
+.env.example
+.DS_Store
+client/node_modules
+client/.git
+server/uploads

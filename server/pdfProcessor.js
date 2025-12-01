@@ -7,9 +7,9 @@ const fs = require('fs').promises;
 
 class PDFProcessor {
   /**
-   * Combine multiple PDF files into one
+   * Combine multiple PDF files into one - returns bytes instead of writing to disk
    */
-  static async combinePDFs(inputPaths, outputPath) {
+  static async combinePDFsToBytes(inputPaths) {
     try {
       const mergedPdf = await PDFDocument.create();
 
@@ -21,8 +21,7 @@ class PDFProcessor {
       }
 
       const pdfBytes = await mergedPdf.save();
-      await fs.writeFile(outputPath, pdfBytes);
-      return { success: true, message: 'PDFs combined successfully' };
+      return pdfBytes;
     } catch (error) {
       throw new Error(`Failed to combine PDFs: ${error.message}`);
     }
@@ -226,6 +225,116 @@ class PDFProcessor {
       const outputBytes = await pdf.save();
       await fs.writeFile(outputPath, outputBytes);
       return { success: true, message: 'Pages deleted successfully' };
+    } catch (error) {
+      throw new Error(`Failed to delete pages: ${error.message}`);
+    }
+  }
+
+  // In-memory versions that return bytes instead of writing to disk
+  
+  static async extractPagesToBytes(inputPath, pageIndices) {
+    try {
+      const pdfBytes = await fs.readFile(inputPath);
+      const pdf = await PDFDocument.load(pdfBytes);
+      const newPdf = await PDFDocument.create();
+
+      for (const pageIndex of pageIndices) {
+        if (pageIndex >= 0 && pageIndex < pdf.getPageCount()) {
+          const [page] = await newPdf.copyPages(pdf, [pageIndex]);
+          newPdf.addPage(page);
+        }
+      }
+
+      return await newPdf.save();
+    } catch (error) {
+      throw new Error(`Failed to extract pages: ${error.message}`);
+    }
+  }
+
+  static async reorderPagesToBytes(inputPath, newOrder) {
+    try {
+      const pdfBytes = await fs.readFile(inputPath);
+      const pdf = await PDFDocument.load(pdfBytes);
+      const newPdf = await PDFDocument.create();
+
+      for (const pageIndex of newOrder) {
+        if (pageIndex >= 0 && pageIndex < pdf.getPageCount()) {
+          const [page] = await newPdf.copyPages(pdf, [pageIndex]);
+          newPdf.addPage(page);
+        }
+      }
+
+      return await newPdf.save();
+    } catch (error) {
+      throw new Error(`Failed to reorder pages: ${error.message}`);
+    }
+  }
+
+  static async rotatePagesTobytes(inputPath, pageIndices, angle) {
+    try {
+      const pdfBytes = await fs.readFile(inputPath);
+      const pdf = await PDFDocument.load(pdfBytes);
+
+      for (const pageIndex of pageIndices) {
+        if (pageIndex >= 0 && pageIndex < pdf.getPageCount()) {
+          const page = pdf.getPage(pageIndex);
+          page.setRotation((page.getRotation().angle + angle) % 360);
+        }
+      }
+
+      return await pdf.save();
+    } catch (error) {
+      throw new Error(`Failed to rotate pages: ${error.message}`);
+    }
+  }
+
+  static async addWatermarkToBytes(inputPath, watermarkText, options = {}) {
+    try {
+      const pdfBytes = await fs.readFile(inputPath);
+      const pdf = await PDFDocument.load(pdfBytes);
+      const fontSize = options.fontSize || 60;
+      const opacity = options.opacity || 0.3;
+
+      for (let i = 0; i < pdf.getPageCount(); i++) {
+        const page = pdf.getPage(i);
+        page.drawText(watermarkText, {
+          x: 50,
+          y: page.getHeight() / 2,
+          size: fontSize,
+          opacity: opacity,
+          color: rgb(0.5, 0.5, 0.5)
+        });
+      }
+
+      return await pdf.save();
+    } catch (error) {
+      throw new Error(`Failed to add watermark: ${error.message}`);
+    }
+  }
+
+  static async compressPDFToBytes(inputPath) {
+    try {
+      const pdfBytes = await fs.readFile(inputPath);
+      const pdf = await PDFDocument.load(pdfBytes);
+      return await pdf.save();
+    } catch (error) {
+      throw new Error(`Failed to compress PDF: ${error.message}`);
+    }
+  }
+
+  static async deletePagesTobytes(inputPath, pageIndices) {
+    try {
+      const pdfBytes = await fs.readFile(inputPath);
+      const pdf = await PDFDocument.load(pdfBytes);
+      const indicesToDelete = pageIndices.sort((a, b) => b - a);
+
+      for (const pageIndex of indicesToDelete) {
+        if (pageIndex >= 0 && pageIndex < pdf.getPageCount()) {
+          pdf.removePage(pageIndex);
+        }
+      }
+
+      return await pdf.save();
     } catch (error) {
       throw new Error(`Failed to delete pages: ${error.message}`);
     }

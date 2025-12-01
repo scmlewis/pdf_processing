@@ -42,17 +42,11 @@ router.post('/combine', upload.array('files', 10), async (req, res) => {
     }
 
     const inputPaths = req.files.map(f => f.path);
-    const outputPath = path.join(__dirname, '../uploads', `combined-${Date.now()}.pdf`);
-
-    const result = await PDFProcessor.combinePDFs(inputPaths, outputPath);
-    
-    // Read the generated file and send directly
-    const fs = require('fs');
-    const pdfBuffer = fs.readFileSync(outputPath);
+    const pdfBytes = await PDFProcessor.combinePDFsToBytes(inputPaths);
     
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="combined.pdf"');
-    res.send(pdfBuffer);
+    res.send(Buffer.from(pdfBytes));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -73,15 +67,11 @@ router.post('/extract', upload.single('file'), async (req, res) => {
       return res.status(400).json({ error: 'Invalid page indices' });
     }
 
-    const outputPath = path.join(__dirname, '../uploads', `extracted-${Date.now()}.pdf`);
-    await PDFProcessor.extractPages(req.file.path, outputPath, pageIndices);
-
-    const fs = require('fs');
-    const pdfBuffer = fs.readFileSync(outputPath);
+    const pdfBytes = await PDFProcessor.extractPagesToBytes(req.file.path, pageIndices);
     
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="extracted.pdf"');
-    res.send(pdfBuffer);
+    res.send(Buffer.from(pdfBytes));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -102,15 +92,11 @@ router.post('/reorder', upload.single('file'), async (req, res) => {
       return res.status(400).json({ error: 'Invalid page order' });
     }
 
-    const outputPath = path.join(__dirname, '../uploads', `reordered-${Date.now()}.pdf`);
-    await PDFProcessor.reorderPages(req.file.path, outputPath, newOrder);
-
-    const fs = require('fs');
-    const pdfBuffer = fs.readFileSync(outputPath);
+    const pdfBytes = await PDFProcessor.reorderPagesToBytes(req.file.path, newOrder);
     
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="reordered.pdf"');
-    res.send(pdfBuffer);
+    res.send(Buffer.from(pdfBytes));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -133,15 +119,11 @@ router.post('/rotate', upload.single('file'), async (req, res) => {
       return res.status(400).json({ error: 'No page indices specified' });
     }
 
-    const outputPath = path.join(__dirname, '../uploads', `rotated-${Date.now()}.pdf`);
-    await PDFProcessor.rotatePages(req.file.path, outputPath, pageIndices, angle);
-
-    const fs = require('fs');
-    const pdfBuffer = fs.readFileSync(outputPath);
+    const pdfBytes = await PDFProcessor.rotatePagesTobytes(req.file.path, pageIndices, angle);
     
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="rotated.pdf"');
-    res.send(pdfBuffer);
+    res.send(Buffer.from(pdfBytes));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -164,15 +146,11 @@ router.post('/watermark', upload.single('file'), async (req, res) => {
       angle: parseInt(req.body.angle || -45)
     };
 
-    const outputPath = path.join(__dirname, '../uploads', `watermarked-${Date.now()}.pdf`);
-    await PDFProcessor.addWatermark(req.file.path, outputPath, watermarkText, options);
-
-    const fs = require('fs');
-    const pdfBuffer = fs.readFileSync(outputPath);
+    const pdfBytes = await PDFProcessor.addWatermarkToBytes(req.file.path, watermarkText, options);
     
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="watermarked.pdf"');
-    res.send(pdfBuffer);
+    res.send(Buffer.from(pdfBytes));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -188,15 +166,11 @@ router.post('/compress', upload.single('file'), async (req, res) => {
       return res.status(400).json({ error: 'No PDF file uploaded' });
     }
 
-    const outputPath = path.join(__dirname, '../uploads', `compressed-${Date.now()}.pdf`);
-    await PDFProcessor.compressPDF(req.file.path, outputPath);
-
-    const fs = require('fs');
-    const pdfBuffer = fs.readFileSync(outputPath);
+    const pdfBytes = await PDFProcessor.compressPDFToBytes(req.file.path);
     
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="compressed.pdf"');
-    res.send(pdfBuffer);
+    res.send(Buffer.from(pdfBytes));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -260,15 +234,11 @@ router.post('/delete-pages', upload.single('file'), async (req, res) => {
       return res.status(400).json({ error: 'No page indices to delete' });
     }
 
-    const outputPath = path.join(__dirname, '../uploads', `deleted-${Date.now()}.pdf`);
-    await PDFProcessor.deletePages(req.file.path, outputPath, pageIndices);
-
-    const fs = require('fs');
-    const pdfBuffer = fs.readFileSync(outputPath);
+    const pdfBytes = await PDFProcessor.deletePagesTobytes(req.file.path, pageIndices);
     
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="deleted.pdf"');
-    res.send(pdfBuffer);
+    res.send(Buffer.from(pdfBytes));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

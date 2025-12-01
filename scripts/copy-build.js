@@ -2,8 +2,9 @@ const fs = require('fs');
 const path = require('path');
 
 // Copy client build to api/public
-const srcDir = path.join(__dirname, 'client', 'build');
-const destDir = path.join(__dirname, 'api', 'public');
+// __dirname is scripts/, so we need to go up one level
+const srcDir = path.join(__dirname, '../client/build');
+const destDir = path.join(__dirname, '../api/public');
 
 if (fs.existsSync(srcDir)) {
   // Ensure destination directory exists
@@ -32,7 +33,10 @@ if (fs.existsSync(srcDir)) {
   }
 
   copyRecursive(srcDir, destDir);
-  console.log('✓ Copied client build to api/public');
+  console.log('Copied client build to api/public');
+  console.log('Source:', srcDir);
+  console.log('Destination:', destDir);
 } else {
-  console.error('✗ Client build directory not found:', srcDir);
+  console.error('Client build directory not found:', srcDir);
+  process.exit(1);
 }

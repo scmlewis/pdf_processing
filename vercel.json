@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npm install && cd client && npm install && npm run build && cd .. && cp -r client/build api/public",
+  "buildCommand": "npm install && cd client && npm install && npm run build && cd .. && node scripts/copy-build.js",
   "builds": [
     {
       "src": "api/index.js",

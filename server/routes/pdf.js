@@ -22,6 +22,9 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
+  limits: {
+    fileSize: 200 * 1024 * 1024 // 200MB per file
+  },
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'application/pdf') {
       cb(null, true);
@@ -35,10 +38,10 @@ const upload = multer({
  * POST /api/pdf/combine
  * Combine multiple PDFs
  */
-router.post('/combine', upload.array('files', 10), async (req, res) => {
+router.post('/combine', upload.array('files', 50), async (req, res) => {
   try {
     if (!req.files || req.files.length < 2) {
-      return res.status(400).json({ error: 'Please upload at least 2 PDF files' });
+      return res.status(400).json({ error: 'Please upload at least 2 PDF files (maximum 50 files per request)' });
     }
 
     const inputPaths = req.files.map(f => f.path);

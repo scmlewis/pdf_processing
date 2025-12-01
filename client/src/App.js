@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 import ThemeToggle from './components/ThemeToggle';
+import UserGuide from './components/UserGuide';
 import CombineTab from './components/CombineTab';
 import ExtractTab from './components/ExtractTab';
 import ReorderTab from './components/ReorderTab';
@@ -31,6 +32,7 @@ function App() {
   return (
     <div className="app">
       <ThemeToggle />
+      <UserGuide />
       <div className="container">
         <header className="header">
           <h1>📄 PDF Processor</h1>

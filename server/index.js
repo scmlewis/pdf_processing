@@ -65,6 +65,21 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Debug endpoint
+app.get('/api/debug', (req, res) => {
+  const fs = require('fs');
+  const dirs = {
+    cwd: process.cwd(),
+    dirname: __dirname,
+    buildPath: buildPath,
+    buildExists: buildPath ? fs.existsSync(buildPath) : false,
+    indexExists: buildPath ? fs.existsSync(require('path').join(buildPath, 'index.html')) : false,
+    apiPublicExists: fs.existsSync(require('path').join(__dirname, '../api/public')),
+    clientBuildExists: fs.existsSync(require('path').join(__dirname, '../client/build'))
+  };
+  res.json(dirs);
+});
+
 // Serve React app - catch all
 app.get('*', (req, res) => {
   if (buildPath) {

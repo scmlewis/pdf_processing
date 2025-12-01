@@ -1,13 +1,10 @@
 {
   "version": 2,
-  "buildCommand": "npm install && cd client && npm install && npm run build && cd ..",
+  "buildCommand": "npm install && cd client && npm install && npm run build && cd .. && cp -r client/build api/public",
   "builds": [
     {
       "src": "api/index.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": "client/build/**"
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [

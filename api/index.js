@@ -26,7 +26,7 @@ for (const p of possibleBuildPaths) {
   try {
     if (fs.existsSync(p)) {
       buildPath = p;
-      console.log('Found build at:', buildPath);
+      console.log('[Startup] Found build at:', buildPath);
       break;
     }
   } catch (e) {
@@ -37,9 +37,10 @@ for (const p of possibleBuildPaths) {
 // Serve static files if build exists
 if (buildPath) {
   app.use(express.static(buildPath));
-  console.log('Serving static files from:', buildPath);
+  console.log('[Startup] Serving static files from:', buildPath);
 } else {
-  console.log('Warning: Build directory not found at any expected location');
+  console.log('[Startup] Warning: Build directory not found at any expected location');
+  console.log('[Startup] Checked paths:', possibleBuildPaths);
 }
 
 // API Routes
@@ -50,7 +51,8 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     message: 'PDF Processing Server is running',
-    buildPath: buildPath || 'Not found'
+    buildPath: buildPath || 'Not found',
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -72,7 +74,8 @@ app.get('*', (req, res) => {
   res.status(404).json({ 
     error: 'Not Found', 
     message: 'Static files not found. Build path: ' + (buildPath || 'Not configured'),
-    availablePaths: possibleBuildPaths
+    availablePaths: possibleBuildPaths,
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -81,7 +84,8 @@ app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(500).json({
     error: 'Internal Server Error',
-    message: err.message
+    message: err.message,
+    timestamp: new Date().toISOString()
   });
 });
 

@@ -1,18 +1,16 @@
 {
   "version": 2,
-  "buildCommand": "npm install && cd client && npm install && npm run build && cd ..",
+  "buildCommand": "npm install && cd client && npm install && npm run build",
+  "framework": "express",
+  "nodeVersion": "18.x",
   "builds": [
     {
       "src": "api.js",
       "use": "@vercel/node",
       "config": {
         "maxLambdaSize": "50mb",
-        "includeFiles": [
-          "client/build/**",
-          "server/**",
-          "package.json",
-          "package-lock.json"
-        ]
+        "includeFiles": "client/build/**",
+        "excludeFiles": "node_modules/**"
       }
     }
   ],
@@ -21,8 +19,5 @@
       "src": "/(.*)",
       "dest": "api.js"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }

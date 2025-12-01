@@ -12,13 +12,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Try multiple possible build locations
+// Try multiple possible build locations for Vercel
 const possibleBuildPaths = [
-  path.join(__dirname, 'public'),
   path.join(__dirname, '../client/build'),
-  path.join(__dirname, '../../client/build'),
-  '/var/task/api/public',
-  '/var/task/client/build'
+  path.join(__dirname, 'public'),
+  path.join(__dirname, '../api/public'),
+  '/var/task/client/build',
+  '/var/task/api/public'
 ];
 
 let buildPath = null;
@@ -26,17 +26,20 @@ for (const p of possibleBuildPaths) {
   try {
     if (fs.existsSync(p)) {
       buildPath = p;
-      console.log('✓ Found build at:', buildPath);
+      console.log('Found build at:', buildPath);
       break;
     }
   } catch (e) {
-    console.log('✗ Checked:', p, 'Error:', e.message);
+    // Continue to next path
   }
 }
 
 // Serve static files if build exists
 if (buildPath) {
   app.use(express.static(buildPath));
+  console.log('Serving static files from:', buildPath);
+} else {
+  console.log('Warning: Build directory not found at any expected location');
 }
 
 // API Routes

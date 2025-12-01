@@ -4,14 +4,12 @@ import DragDropZone from './DragDropZone';
 import FilePreview from './FilePreview';
 import ProgressIndicator from './ProgressIndicator';
 import ErrorAlert from './ErrorAlert';
-import { DownloadButton } from './CommonComponents';
 import './TabStyles.css';
 
 function CombineTab() {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
   const handleFilesSelected = (selectedFiles) => {
@@ -24,6 +22,17 @@ function CombineTab() {
     }
   };
 
+  const downloadPDF = (blob, filename) => {
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
   const handleCombine = async () => {
     if (files.length < 2) {
       setError('Please select at least 2 PDF files');
@@ -32,7 +41,6 @@ function CombineTab() {
 
     setLoading(true);
     setError(null);
-    setResult(null);
     setProgress(0);
 
     const formData = new FormData();
@@ -45,12 +53,14 @@ function CombineTab() {
       }, 300);
 
       const response = await axios.post('/api/pdf/combine', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        responseType: 'blob'
       });
 
       clearInterval(progressInterval);
       setProgress(100);
-      setResult(response.data);
+      downloadPDF(response.data, 'combined.pdf');
+      setFiles([]);
     } catch (err) {
       setError(err.response?.data?.error || 'Error combining PDFs. Please check your files and try again.');
     } finally {
@@ -71,17 +81,14 @@ function CombineTab() {
       <FilePreview files={files} />
 
       {!loading && (
-        <>
-          <button
-            onClick={handleCombine}
-            className="action-button"
-            disabled={files.length < 2}
-            style={{ marginTop: '20px' }}
-          >
-            Combine PDFs
-          </button>
-          {result && <DownloadButton url={result.downloadUrl} filename="combined.pdf" />}
-        </>
+        <button
+          onClick={handleCombine}
+          className="action-button"
+          disabled={files.length < 2}
+          style={{ marginTop: '20px' }}
+        >
+          Combine PDFs
+        </button>
       )}
     </div>
   );

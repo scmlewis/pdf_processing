@@ -44,13 +44,15 @@ router.post('/combine', upload.array('files', 10), async (req, res) => {
     const inputPaths = req.files.map(f => f.path);
     const outputPath = path.join(__dirname, '../uploads', `combined-${Date.now()}.pdf`);
 
-    await PDFProcessor.combinePDFs(inputPaths, outputPath);
-
-    res.json({
-      success: true,
-      message: 'PDFs combined successfully',
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
-    });
+    const result = await PDFProcessor.combinePDFs(inputPaths, outputPath);
+    
+    // Read the generated file and send directly
+    const fs = require('fs');
+    const pdfBuffer = fs.readFileSync(outputPath);
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="combined.pdf"');
+    res.send(pdfBuffer);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -74,11 +76,12 @@ router.post('/extract', upload.single('file'), async (req, res) => {
     const outputPath = path.join(__dirname, '../uploads', `extracted-${Date.now()}.pdf`);
     await PDFProcessor.extractPages(req.file.path, outputPath, pageIndices);
 
-    res.json({
-      success: true,
-      message: 'Pages extracted successfully',
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
-    });
+    const fs = require('fs');
+    const pdfBuffer = fs.readFileSync(outputPath);
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="extracted.pdf"');
+    res.send(pdfBuffer);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -102,11 +105,12 @@ router.post('/reorder', upload.single('file'), async (req, res) => {
     const outputPath = path.join(__dirname, '../uploads', `reordered-${Date.now()}.pdf`);
     await PDFProcessor.reorderPages(req.file.path, outputPath, newOrder);
 
-    res.json({
-      success: true,
-      message: 'Pages reordered successfully',
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
-    });
+    const fs = require('fs');
+    const pdfBuffer = fs.readFileSync(outputPath);
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="reordered.pdf"');
+    res.send(pdfBuffer);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -132,11 +136,12 @@ router.post('/rotate', upload.single('file'), async (req, res) => {
     const outputPath = path.join(__dirname, '../uploads', `rotated-${Date.now()}.pdf`);
     await PDFProcessor.rotatePages(req.file.path, outputPath, pageIndices, angle);
 
-    res.json({
-      success: true,
-      message: `Pages rotated ${angle} degrees`,
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
-    });
+    const fs = require('fs');
+    const pdfBuffer = fs.readFileSync(outputPath);
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="rotated.pdf"');
+    res.send(pdfBuffer);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -162,11 +167,12 @@ router.post('/watermark', upload.single('file'), async (req, res) => {
     const outputPath = path.join(__dirname, '../uploads', `watermarked-${Date.now()}.pdf`);
     await PDFProcessor.addWatermark(req.file.path, outputPath, watermarkText, options);
 
-    res.json({
-      success: true,
-      message: 'Watermark added successfully',
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
-    });
+    const fs = require('fs');
+    const pdfBuffer = fs.readFileSync(outputPath);
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="watermarked.pdf"');
+    res.send(pdfBuffer);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -185,11 +191,12 @@ router.post('/compress', upload.single('file'), async (req, res) => {
     const outputPath = path.join(__dirname, '../uploads', `compressed-${Date.now()}.pdf`);
     await PDFProcessor.compressPDF(req.file.path, outputPath);
 
-    res.json({
-      success: true,
-      message: 'PDF compressed successfully',
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
-    });
+    const fs = require('fs');
+    const pdfBuffer = fs.readFileSync(outputPath);
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="compressed.pdf"');
+    res.send(pdfBuffer);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -256,11 +263,12 @@ router.post('/delete-pages', upload.single('file'), async (req, res) => {
     const outputPath = path.join(__dirname, '../uploads', `deleted-${Date.now()}.pdf`);
     await PDFProcessor.deletePages(req.file.path, outputPath, pageIndices);
 
-    res.json({
-      success: true,
-      message: 'Pages deleted successfully',
-      downloadUrl: `/api/pdf/download/${path.basename(outputPath)}`
-    });
+    const fs = require('fs');
+    const pdfBuffer = fs.readFileSync(outputPath);
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="deleted.pdf"');
+    res.send(pdfBuffer);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

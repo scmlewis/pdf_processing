@@ -53,7 +53,7 @@ if (buildPath) {
   app.use(express.static(buildPath));
 }
 
-// API Routes
+// API Routes (must come BEFORE static middleware)
 app.use('/api/pdf', pdfRoutes);
 
 // Health check
@@ -80,7 +80,7 @@ app.get('/api/debug', (req, res) => {
   res.json(dirs);
 });
 
-// Serve React app - catch all
+// Serve React app - catch all (must come AFTER all /api routes)
 app.get('*', (req, res) => {
   if (buildPath) {
     const indexPath = path.join(buildPath, 'index.html');
@@ -98,7 +98,7 @@ app.get('*', (req, res) => {
     error: 'Not Found',
     message: buildPath ? 'index.html not found' : 'Build path not found'
   });
-});
+});;
 
 // Error handling middleware
 app.use((err, req, res, next) => {

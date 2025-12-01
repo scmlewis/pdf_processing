@@ -2,13 +2,14 @@
   "name": "pdf-processor-web",
   "version": "1.0.0",
   "description": "Web application for processing, combining, and manipulating PDF files",
-  "main": "server/index.js",
+  "main": "api/index.js",
   "scripts": {
     "start": "node server/index.js",
     "dev": "nodemon server/index.js",
     "client": "cd client && npm start",
     "install-all": "npm install && cd client && npm install",
-    "build": "cd client && npm run build"
+    "build": "cd client && npm run build && node scripts/copy-build.js",
+    "vercel-build": "npm install && cd client && npm install && npm run build && node ../scripts/copy-build.js"
   },
   "keywords": ["pdf", "processing", "combine", "trim", "reorder"],
   "author": "",

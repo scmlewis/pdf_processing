@@ -12,13 +12,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Try multiple possible build locations for Vercel
+// Try multiple possible build locations for different deployment environments
 const possibleBuildPaths = [
-  path.join(__dirname, '../client/build'),
-  path.join(__dirname, 'public'),
-  path.join(__dirname, '../api/public'),
-  '/var/task/client/build',
-  '/var/task/api/public'
+  path.join(__dirname, '../client/build'),      // Local development
+  path.join(__dirname, 'public'),                 // After copy-build script
+  path.join(__dirname, '../api/public'),          // Alternative path
+  '/var/task/client/build',                       // Vercel
+  '/var/task/api/public',                         // Vercel
+  '/opt/render/project/src/client/build',        // Render
+  path.join(process.cwd(), 'client/build'),      // Current working directory (Render)
+  path.join(process.cwd(), 'api/public')         // Current working directory (Render)
 ];
 
 let buildPath = null;
@@ -34,13 +37,17 @@ for (const p of possibleBuildPaths) {
   }
 }
 
+if (!buildPath) {
+  console.log('[Startup] Warning: Build directory not found');
+  console.log('[Startup] Current working directory:', process.cwd());
+  console.log('[Startup] __dirname:', __dirname);
+  console.log('[Startup] Checked paths:', possibleBuildPaths);
+}
+
 // Serve static files if build exists
 if (buildPath) {
   app.use(express.static(buildPath));
   console.log('[Startup] Serving static files from:', buildPath);
-} else {
-  console.log('[Startup] Warning: Build directory not found at any expected location');
-  console.log('[Startup] Checked paths:', possibleBuildPaths);
 }
 
 // API Routes

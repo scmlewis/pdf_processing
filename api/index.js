@@ -10,7 +10,10 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../client/build')));
+
+// Serve static files from client build
+const buildPath = path.join(__dirname, '../client/build');
+app.use(express.static(buildPath));
 
 // API Routes
 app.use('/api/pdf', pdfRoutes);
@@ -22,7 +25,7 @@ app.get('/api/health', (req, res) => {
 
 // Serve React app - catch-all for client routes
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/build/index.html'));
+  res.sendFile(path.join(buildPath, 'index.html'));
 });
 
 // Error handling middleware
@@ -35,3 +38,4 @@ app.use((err, req, res, next) => {
 });
 
 module.exports = app;
+

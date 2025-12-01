@@ -39,6 +39,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`PDF Processing Server running on http://localhost:${PORT}`);
-});
+try {
+  app.listen(PORT, () => {
+    console.log(`PDF Processing Server running on http://localhost:${PORT}`);
+  });
+} catch (error) {
+  console.error('Failed to start server:', error);
+  process.exit(1);
+}

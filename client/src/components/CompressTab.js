@@ -4,14 +4,12 @@ import DragDropZone from './DragDropZone';
 import FilePreview from './FilePreview';
 import ProgressIndicator from './ProgressIndicator';
 import ErrorAlert from './ErrorAlert';
-import { DownloadButton } from './CommonComponents';
 import './TabStyles.css';
 
 function CompressTab() {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
   const handleFilesSelected = (selectedFiles) => {
@@ -19,6 +17,17 @@ function CompressTab() {
       setFile(selectedFiles[0]);
       setError(null);
     }
+  };
+
+  const downloadPDF = (blob, filename) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   };
 
   const handleCompress = async () => {
@@ -29,7 +38,6 @@ function CompressTab() {
 
     setLoading(true);
     setError(null);
-    setResult(null);
     setProgress(0);
 
     const formData = new FormData();
@@ -41,12 +49,13 @@ function CompressTab() {
       }, 300);
 
       const response = await axios.post('/api/pdf/compress', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        responseType: 'blob'
       });
 
       clearInterval(progressInterval);
       setProgress(100);
-      setResult(response.data);
+      downloadPDF(response.data, 'compressed.pdf');
     } catch (err) {
       setError(err.response?.data?.error || 'Error compressing PDF. Please check your file.');
     } finally {
@@ -67,12 +76,9 @@ function CompressTab() {
       {file && <FilePreview files={[file]} />}
 
       {!loading && (
-        <>
-          <button onClick={handleCompress} className="action-button" disabled={!file} style={{ marginTop: '20px' }}>
-            Compress PDF
-          </button>
-          {result && <DownloadButton url={result.downloadUrl} filename="compressed.pdf" />}
-        </>
+        <button onClick={handleCompress} className="action-button" disabled={!file} style={{ marginTop: '20px' }}>
+          Compress PDF
+        </button>
       )}
     </div>
   );

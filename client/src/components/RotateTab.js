@@ -4,7 +4,6 @@ import DragDropZone from './DragDropZone';
 import FilePreview from './FilePreview';
 import ProgressIndicator from './ProgressIndicator';
 import ErrorAlert from './ErrorAlert';
-import { DownloadButton } from './CommonComponents';
 import './TabStyles.css';
 
 function RotateTab() {
@@ -13,7 +12,6 @@ function RotateTab() {
   const [angle, setAngle] = useState(90);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
   const handleFilesSelected = (selectedFiles) => {
@@ -21,6 +19,17 @@ function RotateTab() {
       setFile(selectedFiles[0]);
       setError(null);
     }
+  };
+
+  const downloadPDF = (blob, filename) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   };
 
   const handleRotate = async () => {
@@ -31,7 +40,6 @@ function RotateTab() {
 
     setLoading(true);
     setError(null);
-    setResult(null);
     setProgress(0);
 
     const formData = new FormData();
@@ -45,12 +53,13 @@ function RotateTab() {
       }, 300);
 
       const response = await axios.post('/api/pdf/rotate', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        responseType: 'blob'
       });
 
       clearInterval(progressInterval);
       setProgress(100);
-      setResult(response.data);
+      downloadPDF(response.data, 'rotated.pdf');
     } catch (err) {
       setError(err.response?.data?.error || 'Error rotating pages. Please check your page indices.');
     } finally {
@@ -91,12 +100,9 @@ function RotateTab() {
       </div>
 
       {!loading && (
-        <>
-          <button onClick={handleRotate} className="action-button" disabled={!file} style={{ marginTop: '20px' }}>
-            Rotate Pages
-          </button>
-          {result && <DownloadButton url={result.downloadUrl} filename="rotated.pdf" />}
-        </>
+        <button onClick={handleRotate} className="action-button" disabled={!file} style={{ marginTop: '20px' }}>
+          Rotate Pages
+        </button>
       )}
     </div>
   );

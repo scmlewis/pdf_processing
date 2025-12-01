@@ -4,7 +4,6 @@ import DragDropZone from './DragDropZone';
 import FilePreview from './FilePreview';
 import ProgressIndicator from './ProgressIndicator';
 import ErrorAlert from './ErrorAlert';
-import { DownloadButton } from './CommonComponents';
 import './TabStyles.css';
 
 function WatermarkTab() {
@@ -15,7 +14,6 @@ function WatermarkTab() {
   const [angle, setAngle] = useState(-45);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
   const handleFilesSelected = (selectedFiles) => {
@@ -23,6 +21,17 @@ function WatermarkTab() {
       setFile(selectedFiles[0]);
       setError(null);
     }
+  };
+
+  const downloadPDF = (blob, filename) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   };
 
   const handleWatermark = async () => {
@@ -33,7 +42,6 @@ function WatermarkTab() {
 
     setLoading(true);
     setError(null);
-    setResult(null);
     setProgress(0);
 
     const formData = new FormData();
@@ -49,12 +57,13 @@ function WatermarkTab() {
       }, 300);
 
       const response = await axios.post('/api/pdf/watermark', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        responseType: 'blob'
       });
 
       clearInterval(progressInterval);
       setProgress(100);
-      setResult(response.data);
+      downloadPDF(response.data, 'watermarked.pdf');
     } catch (err) {
       setError(err.response?.data?.error || 'Error adding watermark. Please check your settings.');
     } finally {
@@ -121,12 +130,9 @@ function WatermarkTab() {
       </div>
 
       {!loading && (
-        <>
-          <button onClick={handleWatermark} className="action-button" disabled={!file} style={{ marginTop: '20px' }}>
-            Add Watermark
-          </button>
-          {result && <DownloadButton url={result.downloadUrl} filename="watermarked.pdf" />}
-        </>
+        <button onClick={handleWatermark} className="action-button" disabled={!file} style={{ marginTop: '20px' }}>
+          Add Watermark
+        </button>
       )}
     </div>
   );

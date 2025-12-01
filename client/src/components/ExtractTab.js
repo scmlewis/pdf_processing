@@ -4,7 +4,6 @@ import DragDropZone from './DragDropZone';
 import FilePreview from './FilePreview';
 import ProgressIndicator from './ProgressIndicator';
 import ErrorAlert from './ErrorAlert';
-import { DownloadButton } from './CommonComponents';
 import './TabStyles.css';
 
 function ExtractTab() {
@@ -12,7 +11,6 @@ function ExtractTab() {
   const [pages, setPages] = useState('0,1,2');
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
   const handleFilesSelected = (selectedFiles) => {
@@ -20,6 +18,17 @@ function ExtractTab() {
       setFile(selectedFiles[0]);
       setError(null);
     }
+  };
+
+  const downloadPDF = (blob, filename) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   };
 
   const handleExtract = async () => {
@@ -30,7 +39,6 @@ function ExtractTab() {
 
     setLoading(true);
     setError(null);
-    setResult(null);
     setProgress(0);
 
     const formData = new FormData();
@@ -43,12 +51,15 @@ function ExtractTab() {
       }, 300);
 
       const response = await axios.post('/api/pdf/extract', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        responseType: 'blob'
       });
 
       clearInterval(progressInterval);
       setProgress(100);
-      setResult(response.data);
+      
+      // Automatically download the PDF
+      downloadPDF(response.data, 'extracted.pdf');
     } catch (err) {
       setError(err.response?.data?.error || 'Error extracting pages. Please check your page indices.');
     } finally {
@@ -81,12 +92,9 @@ function ExtractTab() {
       </div>
 
       {!loading && (
-        <>
-          <button onClick={handleExtract} className="action-button" disabled={!file} style={{ marginTop: '20px' }}>
-            Extract Pages
-          </button>
-          {result && <DownloadButton url={result.downloadUrl} filename="extracted.pdf" />}
-        </>
+        <button onClick={handleExtract} className="action-button" disabled={!file} style={{ marginTop: '20px' }}>
+          Extract Pages
+        </button>
       )}
     </div>
   );

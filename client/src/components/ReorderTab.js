@@ -4,7 +4,6 @@ import DragDropZone from './DragDropZone';
 import FilePreview from './FilePreview';
 import ProgressIndicator from './ProgressIndicator';
 import ErrorAlert from './ErrorAlert';
-import { DownloadButton } from './CommonComponents';
 import './TabStyles.css';
 
 function ReorderTab() {
@@ -12,7 +11,6 @@ function ReorderTab() {
   const [newOrder, setNewOrder] = useState('0,1,2');
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
   const handleFilesSelected = (selectedFiles) => {
@@ -20,6 +18,17 @@ function ReorderTab() {
       setFile(selectedFiles[0]);
       setError(null);
     }
+  };
+
+  const downloadPDF = (blob, filename) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   };
 
   const handleReorder = async () => {
@@ -30,7 +39,6 @@ function ReorderTab() {
 
     setLoading(true);
     setError(null);
-    setResult(null);
     setProgress(0);
 
     const formData = new FormData();
@@ -43,12 +51,13 @@ function ReorderTab() {
       }, 300);
 
       const response = await axios.post('/api/pdf/reorder', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        responseType: 'blob'
       });
 
       clearInterval(progressInterval);
       setProgress(100);
-      setResult(response.data);
+      downloadPDF(response.data, 'reordered.pdf');
     } catch (err) {
       setError(err.response?.data?.error || 'Error reordering pages. Please check your page order.');
     } finally {
@@ -81,12 +90,9 @@ function ReorderTab() {
       </div>
 
       {!loading && (
-        <>
-          <button onClick={handleReorder} className="action-button" disabled={!file} style={{ marginTop: '20px' }}>
-            Reorder Pages
-          </button>
-          {result && <DownloadButton url={result.downloadUrl} filename="reordered.pdf" />}
-        </>
+        <button onClick={handleReorder} className="action-button" disabled={!file} style={{ marginTop: '20px' }}>
+          Reorder Pages
+        </button>
       )}
     </div>
   );

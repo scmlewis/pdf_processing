@@ -5,6 +5,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const pdfRoutes = require('./routes/pdf');
@@ -12,22 +13,76 @@ const pdfRoutes = require('./routes/pdf');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Try multiple possible build locations for different deployment environments
+const possibleBuildPaths = [
+  path.join(__dirname, '../client/build'),        // Local & after copy-build
+  path.join(__dirname, 'public'),                  // Alternative
+  path.join(__dirname, '../api/public'),           // After copy-build to api
+  path.join(process.cwd(), 'client/build'),       // Render CWD
+  path.join(process.cwd(), 'api/public'),         // Render CWD alternative
+  '/opt/render/project/src/client/build'          // Render explicit
+];
+
+let buildPath = null;
+for (const p of possibleBuildPaths) {
+  try {
+    if (fs.existsSync(p)) {
+      buildPath = p;
+      console.log('[Startup] Found React build at:', buildPath);
+      break;
+    }
+  } catch (e) {
+    // Continue
+  }
+}
+
+if (!buildPath) {
+  console.log('[Startup] WARNING: React build not found!');
+  console.log('[Startup] CWD:', process.cwd());
+  console.log('[Startup] __dirname:', __dirname);
+  console.log('[Startup] Checked:', possibleBuildPaths);
+}
+
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../client/build')));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Serve static files
+if (buildPath) {
+  app.use(express.static(buildPath));
+}
 
 // API Routes
 app.use('/api/pdf', pdfRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'PDF Processing Server is running' });
+  res.json({ 
+    status: 'OK', 
+    message: 'PDF Processing Server is running',
+    buildPath: buildPath || 'not found'
+  });
 });
 
-// Serve React app
+// Serve React app - catch all
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/build/index.html'));
+  if (buildPath) {
+    const indexPath = path.join(buildPath, 'index.html');
+    try {
+      if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+        return;
+      }
+    } catch (e) {
+      console.error('Error sending index.html:', e.message);
+    }
+  }
+  
+  res.status(404).json({ 
+    error: 'Not Found',
+    message: buildPath ? 'index.html not found' : 'Build path not found'
+  });
 });
 
 // Error handling middleware
@@ -47,3 +102,4 @@ try {
   console.error('Failed to start server:', error);
   process.exit(1);
 }
+

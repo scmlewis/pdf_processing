@@ -1,0 +1,138 @@
+/* Theme Variables */
+:root {
+  --primary-color: #667eea;
+  --primary-dark: #5568d3;
+  --danger-color: #f44336;
+  --danger-dark: #da190b;
+  --danger-bg: #ffebee;
+  --success-color: #4CAF50;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9f9f9;
+  --bg-hover: #f5f5f5;
+  --bg-drag: rgba(102, 126, 234, 0.1);
+  --text-color: #333333;
+  --text-muted: #888888;
+  --border-color: #dddddd;
+}
+
+[data-theme="dark"] {
+  --primary-color: #7c8fff;
+  --primary-dark: #6b7dd6;
+  --danger-color: #ff6b6b;
+  --danger-dark: #ff5252;
+  --danger-bg: #401e1e;
+  --bg-primary: #1e1e1e;
+  --bg-secondary: #2d2d2d;
+  --bg-hover: #3a3a3a;
+  --bg-drag: rgba(124, 143, 255, 0.1);
+  --text-color: #e0e0e0;
+  --text-muted: #999999;
+  --border-color: #444444;
+}
+
+.app {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background-color: var(--bg-secondary);
+  transition: background-color 0.3s ease;
+  position: relative;
+}
+
+.container {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  max-width: 900px;
+  width: 100%;
+  overflow: hidden;
+  transition: background-color 0.3s ease;
+}
+
+.header {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #764ba2 100%);
+  color: white;
+  padding: 30px 20px;
+  text-align: center;
+  transition: background 0.3s ease;
+}
+
+.header h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+}
+
+.header p {
+  font-size: 1em;
+  opacity: 0.9;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 15px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  overflow-x: auto;
+  transition: background-color 0.3s ease;
+}
+
+.tab-button {
+  padding: 8px 16px;
+  border: 2px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-color);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9em;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.tab-button:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.tab-button.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.content {
+  padding: 30px;
+  min-height: 500px;
+  color: var(--text-color);
+  transition: color 0.3s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 1.8em;
+  }
+
+  .container {
+    margin: 10px;
+  }
+
+  .content {
+    padding: 20px;
+  }
+
+  .tabs {
+    padding: 10px;
+    gap: 3px;
+  }
+
+  .tab-button {
+    padding: 6px 12px;
+    font-size: 0.8em;
+  }
+}

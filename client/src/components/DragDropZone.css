@@ -1,0 +1,43 @@
+.drag-drop-zone {
+  border: 2.5px dashed var(--border-color, #ccc);
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: var(--bg-secondary, #f9f9f9);
+  user-select: none;
+}
+
+.drag-drop-zone:hover {
+  border-color: var(--primary-color, #4CAF50);
+  background-color: var(--bg-hover, #f0f0f0);
+}
+
+.drag-drop-zone.dragging {
+  border-color: var(--primary-color, #4CAF50);
+  background-color: var(--bg-drag, rgba(76, 175, 80, 0.1));
+  transform: scale(1.02);
+}
+
+.drag-drop-content {
+  pointer-events: none;
+}
+
+.drag-drop-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.drag-drop-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-color, #333);
+  margin: 0 0 8px 0;
+}
+
+.drag-drop-hint {
+  font-size: 13px;
+  color: var(--text-muted, #888);
+  margin: 0;
+}

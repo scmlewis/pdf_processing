@@ -5,10 +5,19 @@ const ThemeToggle = () => {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    // Load saved theme preference
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    setIsDark(savedTheme === 'dark');
-    applyTheme(savedTheme);
+    // Check system preference first (auto dark mode detection)
+    const prefersColorScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    const savedTheme = localStorage.getItem('theme');
+    
+    let theme = 'light';
+    if (savedTheme) {
+      theme = savedTheme; // Use saved preference
+    } else if (prefersColorScheme.matches) {
+      theme = 'dark'; // Auto-detect system preference
+    }
+    
+    setIsDark(theme === 'dark');
+    applyTheme(theme);
   }, []);
 
   const applyTheme = (theme) => {
@@ -26,7 +35,7 @@ const ThemeToggle = () => {
     <button
       className="theme-toggle"
       onClick={toggleTheme}
-      title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      title="Switch theme (Ctrl+Space)"
       aria-label="Toggle theme"
     >
       {isDark ? '☀️' : '🌙'}

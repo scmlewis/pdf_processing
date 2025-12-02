@@ -1,0 +1,95 @@
+/* Toast Notifications */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 14px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideInRight 0.3s ease;
+  z-index: 10000;
+  max-width: 300px;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95em;
+  font-weight: 500;
+}
+
+.toast-icon {
+  font-size: 1.2em;
+  flex-shrink: 0;
+}
+
+.toast-message {
+  flex: 1;
+  word-break: break-word;
+}
+
+/* Success Toast */
+.toast-success {
+  background: #4CAF50;
+  color: white;
+  border-left: 4px solid #2e7d32;
+}
+
+/* Error Toast */
+.toast-error {
+  background: #f44336;
+  color: white;
+  border-left: 4px solid #c62828;
+}
+
+/* Info Toast */
+.toast-info {
+  background: #2196F3;
+  color: white;
+  border-left: 4px solid #1565c0;
+}
+
+/* Warning Toast */
+.toast-warning {
+  background: #ff9800;
+  color: white;
+  border-left: 4px solid #e65100;
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .toast {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .toast {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+}

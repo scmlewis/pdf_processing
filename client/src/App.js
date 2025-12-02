@@ -17,6 +17,8 @@ import DeleteTab from './components/DeleteTab';
 function App() {
   const [activeTab, setActiveTab] = useState('combine');
   const [toast, setToast] = useState(null);
+  const [recentTabs, setRecentTabs] = useState(['combine']);
+  const [fileCounts, setFileCounts] = useState({});
 
   const tabs = [
     { id: 'combine', label: '📎 Combine', component: CombineTab, shortcut: '1' },
@@ -30,6 +32,15 @@ function App() {
     { id: 'delete', label: '🗑️ Delete', component: DeleteTab, shortcut: '9' }
   ];
 
+  // Track tab switching for recent tabs
+  const handleTabClick = (tabId) => {
+    setActiveTab(tabId);
+    setRecentTabs(prev => {
+      const filtered = prev.filter(id => id !== tabId);
+      return [tabId, ...filtered].slice(0, 3); // Keep last 3 recent
+    });
+  };
+
   // Keyboard shortcuts handler
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -40,7 +51,7 @@ function App() {
       if (e.key >= '1' && e.key <= '9') {
         const tabIndex = parseInt(e.key) - 1;
         if (tabIndex < tabs.length) {
-          setActiveTab(tabs[tabIndex].id);
+          handleTabClick(tabs[tabIndex].id);
         }
       }
 
@@ -66,9 +77,12 @@ function App() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // Expose toast to window for child components
+  // Expose toast and file count tracker to window for child components
   useEffect(() => {
     window.showToast = showToast;
+    window.updateFileCount = (tabId, count) => {
+      setFileCounts(prev => ({ ...prev, [tabId]: count }));
+    };
   }, []);
 
   const ActiveComponent = tabs.find(t => t.id === activeTab)?.component;
@@ -86,16 +100,22 @@ function App() {
         </header>
 
         <div className="tabs">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
-              title={`${tab.label} (Press ${tab.shortcut})`}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {tabs.map(tab => {
+            const isRecent = recentTabs.includes(tab.id);
+            const fileCount = fileCounts[tab.id];
+            return (
+              <button
+                key={tab.id}
+                className={`tab-button ${activeTab === tab.id ? 'active' : ''} ${isRecent ? 'recent' : ''}`}
+                onClick={() => handleTabClick(tab.id)}
+                title={`${tab.label} (Press ${tab.shortcut})${fileCount ? ` - ${fileCount} file(s)` : ''}`}
+              >
+                {tab.label}
+                {fileCount > 0 && <span className="file-badge">{fileCount}</span>}
+                {isRecent && activeTab !== tab.id && <span className="recent-dot">•</span>}
+              </button>
+            );
+          })}
         </div>
 
         <div className="content">

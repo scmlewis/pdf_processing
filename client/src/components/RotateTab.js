@@ -8,7 +8,7 @@ import './TabStyles.css';
 
 function RotateTab() {
   const [file, setFile] = useState(null);
-  const [pages, setPages] = useState('0');
+  const [pages, setPages] = useState('1');
   const [angle, setAngle] = useState(90);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -44,8 +44,12 @@ function RotateTab() {
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('pageIndices', JSON.stringify(pages.split(',').map(p => parseInt(p.trim()))));
+    // Convert 1-based page numbers to 0-based indices for server
+    const oneBased = pages.split(',').map(p => parseInt(p.trim()));
+    const zeroBasedIndices = oneBased.map(p => p - 1);
+    formData.append('pageIndices', JSON.stringify(zeroBasedIndices));
     formData.append('angle', angle);
+    formData.append('originalFilename', file.name);
 
     try {
       const progressInterval = setInterval(() => {
@@ -59,9 +63,13 @@ function RotateTab() {
 
       clearInterval(progressInterval);
       setProgress(100);
-      downloadPDF(response.data, 'rotated.pdf');
+      const baseName = file.name.replace('.pdf', '');
+      downloadPDF(response.data, `${baseName}-rotated.pdf`);
+      window.showToast?.('Pages rotated successfully!', 'success');
     } catch (err) {
-      setError(err.response?.data?.error || 'Error rotating pages. Please check your page indices.');
+      const errMsg = err.response?.data?.error || 'Error rotating pages';
+      window.showToast?.(errMsg, 'error');
+      setError(errMsg);
     } finally {
       setLoading(false);
       setProgress(0);
@@ -80,12 +88,12 @@ function RotateTab() {
       {file && <FilePreview files={[file]} />}
 
       <div className="input-group" style={{ marginTop: '20px' }}>
-        <label>Page Indices (comma-separated, 0-based)</label>
+        <label>Page Numbers (comma-separated, 1-based)</label>
         <input
           type="text"
           value={pages}
           onChange={(e) => setPages(e.target.value)}
-          placeholder="0,1"
+          placeholder="1,2"
           className="text-input"
         />
       </div>

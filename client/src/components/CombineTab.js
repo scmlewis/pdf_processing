@@ -45,6 +45,8 @@ function CombineTab() {
 
     const formData = new FormData();
     files.forEach(file => formData.append('files', file));
+    // Send first filename for naming the output
+    formData.append('originalFilename', files[0].name);
 
     try {
       // Simulate progress for demo
@@ -59,10 +61,14 @@ function CombineTab() {
 
       clearInterval(progressInterval);
       setProgress(100);
-      downloadPDF(response.data, 'combined.pdf');
+      const baseName = files[0].name.replace('.pdf', '');
+      downloadPDF(response.data, `${baseName}-combined.pdf`);
+      window.showToast?.('PDFs combined successfully!', 'success');
       setFiles([]);
     } catch (err) {
-      setError(err.response?.data?.error || 'Error combining PDFs. Please check your files and try again.');
+      const errMsg = err.response?.data?.error || 'Error combining PDFs';
+      window.showToast?.(errMsg, 'error');
+      setError(errMsg);
     } finally {
       setLoading(false);
       setProgress(0);

@@ -33,6 +33,7 @@ function SplitTab() {
 
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('originalFilename', file.name);
 
     try {
       const progressInterval = setInterval(() => {
@@ -46,8 +47,11 @@ function SplitTab() {
       clearInterval(progressInterval);
       setProgress(100);
       setResult(response.data);
+      window.showToast?.('PDF split successfully!', 'success');
     } catch (err) {
-      setError(err.response?.data?.error || 'Error splitting PDF. Please check your file.');
+      const errMsg = err.response?.data?.error || 'Error splitting PDF';
+      window.showToast?.(errMsg, 'error');
+      setError(errMsg);
     } finally {
       setLoading(false);
       setProgress(0);

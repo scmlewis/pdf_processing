@@ -44,6 +44,7 @@ function ReorderTab() {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('newOrder', JSON.stringify(newOrder.split(',').map(p => parseInt(p.trim()))));
+    formData.append('originalFilename', file.name);
 
     try {
       const progressInterval = setInterval(() => {
@@ -57,9 +58,13 @@ function ReorderTab() {
 
       clearInterval(progressInterval);
       setProgress(100);
-      downloadPDF(response.data, 'reordered.pdf');
+      const baseName = file.name.replace('.pdf', '');
+      downloadPDF(response.data, `${baseName}-reordered.pdf`);
+      window.showToast?.('Pages reordered successfully!', 'success');
     } catch (err) {
-      setError(err.response?.data?.error || 'Error reordering pages. Please check your page order.');
+      const errMsg = err.response?.data?.error || 'Error reordering pages';
+      window.showToast?.(errMsg, 'error');
+      setError(errMsg);
     } finally {
       setLoading(false);
       setProgress(0);

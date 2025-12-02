@@ -46,8 +46,11 @@ function MetadataTab() {
       clearInterval(progressInterval);
       setProgress(100);
       setMetadata(response.data.metadata);
+      window.showToast?.('Metadata loaded successfully!', 'success');
     } catch (err) {
-      setError(err.response?.data?.error || 'Error retrieving metadata. Please check your file.');
+      const errMsg = err.response?.data?.error || 'Error retrieving metadata';
+      window.showToast?.(errMsg, 'error');
+      setError(errMsg);
     } finally {
       setLoading(false);
       setProgress(0);

@@ -10,6 +10,13 @@ const PDFProcessor = require('../pdfProcessor');
 
 const router = express.Router();
 
+// Helper function to get output filename
+function getOutputFilename(originalFilename, operation) {
+  if (!originalFilename) return `${operation}.pdf`;
+  const baseName = originalFilename.replace(/\.pdf$/i, '');
+  return `${baseName}-${operation}.pdf`;
+}
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -47,8 +54,9 @@ router.post('/combine', upload.array('files', 50), async (req, res) => {
     const inputPaths = req.files.map(f => f.path);
     const pdfBytes = await PDFProcessor.combinePDFsToBytes(inputPaths);
     
+    const outputFilename = getOutputFilename(req.body.originalFilename, 'combined');
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename="combined.pdf"');
+    res.setHeader('Content-Disposition', `attachment; filename="${outputFilename}"`);
     res.send(Buffer.from(pdfBytes));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -72,8 +80,9 @@ router.post('/extract', upload.single('file'), async (req, res) => {
 
     const pdfBytes = await PDFProcessor.extractPagesToBytes(req.file.path, pageIndices);
     
+    const outputFilename = getOutputFilename(req.body.originalFilename, 'extracted');
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename="extracted.pdf"');
+    res.setHeader('Content-Disposition', `attachment; filename="${outputFilename}"`);
     res.send(Buffer.from(pdfBytes));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -97,8 +106,9 @@ router.post('/reorder', upload.single('file'), async (req, res) => {
 
     const pdfBytes = await PDFProcessor.reorderPagesToBytes(req.file.path, newOrder);
     
+    const outputFilename = getOutputFilename(req.body.originalFilename, 'reordered');
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename="reordered.pdf"');
+    res.setHeader('Content-Disposition', `attachment; filename="${outputFilename}"`);
     res.send(Buffer.from(pdfBytes));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -124,8 +134,9 @@ router.post('/rotate', upload.single('file'), async (req, res) => {
 
     const pdfBytes = await PDFProcessor.rotatePagesTobytes(req.file.path, pageIndices, angle);
     
+    const outputFilename = getOutputFilename(req.body.originalFilename, 'rotated');
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename="rotated.pdf"');
+    res.setHeader('Content-Disposition', `attachment; filename="${outputFilename}"`);
     res.send(Buffer.from(pdfBytes));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -151,8 +162,9 @@ router.post('/watermark', upload.single('file'), async (req, res) => {
 
     const pdfBytes = await PDFProcessor.addWatermarkToBytes(req.file.path, watermarkText, options);
     
+    const outputFilename = getOutputFilename(req.body.originalFilename, 'watermarked');
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename="watermarked.pdf"');
+    res.setHeader('Content-Disposition', `attachment; filename="${outputFilename}"`);
     res.send(Buffer.from(pdfBytes));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -171,8 +183,9 @@ router.post('/compress', upload.single('file'), async (req, res) => {
 
     const pdfBytes = await PDFProcessor.compressPDFToBytes(req.file.path);
     
+    const outputFilename = getOutputFilename(req.body.originalFilename, 'compressed');
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename="compressed.pdf"');
+    res.setHeader('Content-Disposition', `attachment; filename="${outputFilename}"`);
     res.send(Buffer.from(pdfBytes));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -239,8 +252,9 @@ router.post('/delete-pages', upload.single('file'), async (req, res) => {
 
     const pdfBytes = await PDFProcessor.deletePagesTobytes(req.file.path, pageIndices);
     
+    const outputFilename = getOutputFilename(req.body.originalFilename, 'deleted');
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename="deleted.pdf"');
+    res.setHeader('Content-Disposition', `attachment; filename="${outputFilename}"`);
     res.send(Buffer.from(pdfBytes));
   } catch (error) {
     res.status(500).json({ error: error.message });

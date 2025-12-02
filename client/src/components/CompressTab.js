@@ -42,6 +42,7 @@ function CompressTab() {
 
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('originalFilename', file.name);
 
     try {
       const progressInterval = setInterval(() => {
@@ -55,9 +56,13 @@ function CompressTab() {
 
       clearInterval(progressInterval);
       setProgress(100);
-      downloadPDF(response.data, 'compressed.pdf');
+      const baseName = file.name.replace('.pdf', '');
+      downloadPDF(response.data, `${baseName}-compressed.pdf`);
+      window.showToast?.('PDF compressed successfully!', 'success');
     } catch (err) {
-      setError(err.response?.data?.error || 'Error compressing PDF. Please check your file.');
+      const errMsg = err.response?.data?.error || 'Error compressing PDF';
+      window.showToast?.(errMsg, 'error');
+      setError(errMsg);
     } finally {
       setLoading(false);
       setProgress(0);

@@ -50,6 +50,7 @@ function WatermarkTab() {
     formData.append('fontSize', fontSize);
     formData.append('opacity', opacity);
     formData.append('angle', angle);
+    formData.append('originalFilename', file.name);
 
     try {
       const progressInterval = setInterval(() => {
@@ -63,9 +64,13 @@ function WatermarkTab() {
 
       clearInterval(progressInterval);
       setProgress(100);
-      downloadPDF(response.data, 'watermarked.pdf');
+      const baseName = file.name.replace('.pdf', '');
+      downloadPDF(response.data, `${baseName}-watermarked.pdf`);
+      window.showToast?.('Watermark added successfully!', 'success');
     } catch (err) {
-      setError(err.response?.data?.error || 'Error adding watermark. Please check your settings.');
+      const errMsg = err.response?.data?.error || 'Error adding watermark';
+      window.showToast?.(errMsg, 'error');
+      setError(errMsg);
     } finally {
       setLoading(false);
       setProgress(0);

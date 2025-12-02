@@ -2,7 +2,7 @@
 .settings-toggle {
   position: fixed;
   bottom: 30px;
-  right: 30px;
+  left: 30px;
   width: 60px;
   height: 60px;
   border-radius: 50%;
@@ -16,7 +16,7 @@
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
-  z-index: 997;
+  z-index: 998;
 }
 
 .settings-toggle:hover {
@@ -307,7 +307,7 @@
 @media (max-width: 768px) {
   .settings-toggle {
     bottom: 80px;
-    right: 20px;
+    left: 20px;
     width: 50px;
     height: 50px;
     font-size: 20px;

@@ -117,101 +117,110 @@ function UserGuide() {
         title="Click to view user instructions"
       >
         <span className="help-icon">?</span>
-        {isExpanded ? 'Hide Guide' : 'Help'}
       </button>
 
       {isExpanded && (
-        <div className="guide-panel">
-          <div className="guide-header">
-            <h2>📖 PDF Processor User Guide</h2>
-            <p className="guide-subtitle">Learn how to use each feature</p>
-          </div>
-
-          <div className="guide-intro">
-            <h3>Getting Started</h3>
-            <ul>
-              <li><strong>File Limits:</strong> Upload up to 200MB per file, maximum 50 files for combine operation</li>
-              <li><strong>Supported Format:</strong> Only PDF files (.pdf) are accepted</li>
-              <li><strong>Privacy:</strong> All files are processed on the server and deleted after the operation</li>
-              <li><strong>Dark Mode:</strong> Click the moon icon in the top-right corner to toggle dark/light theme</li>
-              <li><strong>Download:</strong> Your processed file will download automatically when ready</li>
-            </ul>
-          </div>
-
-          <div className="guide-features">
-            <h3>Feature Guides</h3>
-            <div className="features-grid">
-              {Object.entries(guides).map(([feature, guide]) => (
-                <div key={feature} className="feature-card">
-                  <div className="feature-title">{feature}</div>
-                  <p className="feature-description">{guide.description}</p>
-                  <ol className="feature-steps">
-                    {guide.steps.map((step, idx) => (
-                      <li key={idx}>{step}</li>
-                    ))}
-                  </ol>
-                </div>
-              ))}
+        <div className="guide-modal-overlay" onClick={() => setIsExpanded(false)}>
+          <div className="guide-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="guide-header">
+              <h2>📖 PDF Processor User Guide</h2>
+              <p className="guide-subtitle">Learn how to use each feature</p>
+              <button 
+                className="guide-close-x"
+                onClick={() => setIsExpanded(false)}
+              >
+                ✕
+              </button>
             </div>
-          </div>
 
-          <div className="guide-tips">
-            <h3>💡 Pro Tips</h3>
-            <ul>
-              <li>Use "Extract Pages" to remove unnecessary content and reduce file size</li>
-              <li>Use "Metadata" to check document properties before processing</li>
-              <li>For large files, use "Compress" to reduce file size significantly</li>
-              <li>When combining multiple files, they are merged in the order you select them</li>
-              <li>Page numbers are 1-indexed (first page is page 1, not 0)</li>
-              <li>For page ranges, use format like "1-5" or "1,3,5-7"</li>
-            </ul>
-          </div>
+            <div className="guide-content">
+              <div className="guide-intro">
+                <h3>Getting Started</h3>
+                <ul>
+                  <li><strong>File Limits:</strong> Upload up to 200MB per file, maximum 50 files for combine operation</li>
+                  <li><strong>Supported Format:</strong> Only PDF files (.pdf) are accepted</li>
+                  <li><strong>Privacy:</strong> All files are processed on the server and deleted after the operation</li>
+                  <li><strong>Dark Mode:</strong> Click the moon icon in the top-right corner to toggle dark/light theme</li>
+                  <li><strong>Download:</strong> Your processed file will download automatically when ready</li>
+                </ul>
+              </div>
 
-          <div className="guide-limits">
-            <h3>⚙️ Limits & Specifications</h3>
-            <table>
-              <tbody>
-                <tr>
-                  <td><strong>Max File Size</strong></td>
-                  <td>200 MB per file</td>
-                </tr>
-                <tr>
-                  <td><strong>Combine Operation</strong></td>
-                  <td>Maximum 50 files</td>
-                </tr>
-                <tr>
-                  <td><strong>File Format</strong></td>
-                  <td>PDF only (.pdf)</td>
-                </tr>
-                <tr>
-                  <td><strong>Processing</strong></td>
-                  <td>Server-side, secure</td>
-                </tr>
-                <tr>
-                  <td><strong>Storage</strong></td>
-                  <td>Files deleted after processing</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+              <div className="guide-features">
+                <h3>Feature Guides</h3>
+                <div className="features-grid">
+                  {Object.entries(guides).map(([feature, guide]) => (
+                    <div key={feature} className="feature-card">
+                      <div className="feature-title">{feature}</div>
+                      <p className="feature-description">{guide.description}</p>
+                      <ol className="feature-steps">
+                        {guide.steps.map((step, idx) => (
+                          <li key={idx}>{step}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-          <div className="guide-troubleshoot">
-            <h3>❓ Troubleshooting</h3>
-            <ul>
-              <li><strong>Upload fails:</strong> Check file size is under 200MB and format is PDF</li>
-              <li><strong>Processing slow:</strong> Large files take longer; please wait</li>
-              <li><strong>Invalid page numbers:</strong> Ensure page numbers don't exceed total pages</li>
-              <li><strong>Download doesn't start:</strong> Check browser download settings; try refreshing</li>
-              <li><strong>Need help?</strong> Check the feature guide above or contact support</li>
-            </ul>
-          </div>
+              <div className="guide-tips">
+                <h3>💡 Pro Tips</h3>
+                <ul>
+                  <li>Use "Extract Pages" to remove unnecessary content and reduce file size</li>
+                  <li>Use "Metadata" to check document properties before processing</li>
+                  <li>For large files, use "Compress" to reduce file size significantly</li>
+                  <li>When combining multiple files, they are merged in the order you select them</li>
+                  <li>Page numbers are 1-indexed (first page is page 1, not 0)</li>
+                  <li>For page ranges, use format like "1-5" or "1,3,5-7"</li>
+                </ul>
+              </div>
 
-          <button 
-            className="guide-close"
-            onClick={() => setIsExpanded(false)}
-          >
-            Close Guide
-          </button>
+              <div className="guide-limits">
+                <h3>⚙️ Limits & Specifications</h3>
+                <table>
+                  <tbody>
+                    <tr>
+                      <td><strong>Max File Size</strong></td>
+                      <td>200 MB per file</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Combine Operation</strong></td>
+                      <td>Maximum 50 files</td>
+                    </tr>
+                    <tr>
+                      <td><strong>File Format</strong></td>
+                      <td>PDF only (.pdf)</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Processing</strong></td>
+                      <td>Server-side, secure</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Storage</strong></td>
+                      <td>Files deleted after processing</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="guide-troubleshoot">
+                <h3>❓ Troubleshooting</h3>
+                <ul>
+                  <li><strong>Upload fails:</strong> Check file size is under 200MB and format is PDF</li>
+                  <li><strong>Processing slow:</strong> Large files take longer; please wait</li>
+                  <li><strong>Invalid page numbers:</strong> Ensure page numbers don't exceed total pages</li>
+                  <li><strong>Download doesn't start:</strong> Check browser download settings; try refreshing</li>
+                  <li><strong>Need help?</strong> Check the feature guide above or contact support</li>
+                </ul>
+              </div>
+            </div>
+
+            <button 
+              className="guide-close"
+              onClick={() => setIsExpanded(false)}
+            >
+              Close Guide
+            </button>
+          </div>
         </div>
       )}
     </div>

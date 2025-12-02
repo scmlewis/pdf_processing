@@ -1,0 +1,186 @@
+/* Floating Action Menu Container */
+.floating-action-menu {
+  position: fixed;
+  bottom: 100px;
+  left: 20px;
+  z-index: 998;
+}
+
+/* Main FAM Button */
+.fam-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.fam-button:hover:not(.open) {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.fam-button:active {
+  transform: scale(0.95);
+}
+
+.fam-button.open {
+  transform: rotate(45deg);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.fam-icon {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.fam-button.open .fam-icon {
+  transform: rotate(-45deg);
+}
+
+/* FAM Overlay */
+.fam-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 997;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* FAM Menu */
+.fam-menu {
+  position: absolute;
+  bottom: 80px;
+  left: 0;
+  background: var(--bg-primary);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  z-index: 999;
+  min-width: 200px;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* FAM Item */
+.fam-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  color: var(--text-color);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid var(--border-color);
+  animation: fadeInLeft 0.3s ease;
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.fam-item:last-child {
+  border-bottom: none;
+}
+
+.fam-item:hover {
+  background: var(--bg-secondary);
+  color: var(--primary-color);
+  padding-left: 20px;
+}
+
+.fam-item:active {
+  transform: scale(0.95);
+}
+
+.fam-item-icon {
+  font-size: 18px;
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.fam-item:hover .fam-item-icon {
+  transform: scale(1.2) rotate(10deg);
+}
+
+.fam-item-label {
+  flex: 1;
+  text-align: left;
+}
+
+/* Dark Mode */
+[data-theme="dark"] .fam-menu {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .floating-action-menu {
+    bottom: 80px;
+    left: 10px;
+  }
+
+  .fam-button {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+
+  .fam-menu {
+    min-width: 160px;
+  }
+
+  .fam-item {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .fam-item-icon {
+    font-size: 16px;
+  }
+}

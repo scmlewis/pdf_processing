@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import ThemeToggle from './components/ThemeToggle';
 import UserGuide from './components/UserGuide';
-import SecurityPledge from './components/SecurityPledge';
 import SettingsPanel from './components/SettingsPanel';
 import Toast from './components/Toast';
 import CombineTab from './components/CombineTab';
@@ -87,7 +86,6 @@ function App() {
     <div className="app">
       <ThemeToggle />
       <UserGuide />
-      <SecurityPledge />
       <SettingsPanel />
       {toast && <Toast message={toast.message} type={toast.type} />}
       <div className="container">

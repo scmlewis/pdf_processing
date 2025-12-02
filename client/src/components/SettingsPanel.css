@@ -2,7 +2,7 @@
 .settings-toggle {
   position: fixed;
   bottom: 30px;
-  right: 90px;
+  right: 100px;
   width: 60px;
   height: 60px;
   border-radius: 50%;
@@ -307,7 +307,7 @@
 @media (max-width: 768px) {
   .settings-toggle {
     bottom: 30px;
-    right: 80px;
+    right: 90px;
     width: 50px;
     height: 50px;
     font-size: 20px;

@@ -80,7 +80,7 @@ function ReorderTab() {
       <ErrorAlert error={error} onDismiss={() => setError(null)} />
 
       <DragDropZone onFilesSelected={handleFilesSelected} multiple={false} label="Drag & drop a PDF to reorder" />
-      {file && <FilePreview files={[file]} />}
+      {file && <FilePreview files={[file]} onRemoveFile={() => setFile(null)} />}
 
       <div className="input-group" style={{ marginTop: '20px' }}>
         <label>New Page Order (comma-separated, 0-based)</label>

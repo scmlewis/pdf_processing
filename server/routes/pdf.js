@@ -223,7 +223,13 @@ router.post('/split', upload.single('file'), async (req, res) => {
     const outputDir = path.join(__dirname, '../uploads', splitDirName);
     await fs.mkdir(outputDir, { recursive: true });
 
-    const result = await PDFProcessor.splitPDF(req.file.path, outputDir);
+    const options = {
+      splitMode: req.body.splitMode || 'single',
+      pagesPerFile: req.body.pagesPerFile || '1',
+      pageRange: req.body.pageRange || undefined
+    };
+
+    const result = await PDFProcessor.splitPDF(req.file.path, outputDir, options);
 
     res.json({
       success: true,

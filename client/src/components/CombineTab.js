@@ -75,6 +75,10 @@ function CombineTab() {
     }
   };
 
+  const handleRemoveFile = (index) => {
+    setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+  };
+
   return (
     <div className="tab-content">
       <h2>Combine Multiple PDFs</h2>
@@ -84,7 +88,7 @@ function CombineTab() {
       <ErrorAlert error={error} onDismiss={() => setError(null)} />
 
       <DragDropZone onFilesSelected={handleFilesSelected} multiple label="Drag & drop PDFs to combine" />
-      <FilePreview files={files} />
+      <FilePreview files={files} onRemoveFile={handleRemoveFile} />
 
       {!loading && (
         <button

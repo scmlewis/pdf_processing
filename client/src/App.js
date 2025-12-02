@@ -4,7 +4,6 @@ import ThemeToggle from './components/ThemeToggle';
 import UserGuide from './components/UserGuide';
 import SecurityPledge from './components/SecurityPledge';
 import SettingsPanel from './components/SettingsPanel';
-import FloatingActionMenu from './components/FloatingActionMenu';
 import Toast from './components/Toast';
 import CombineTab from './components/CombineTab';
 import ExtractTab from './components/ExtractTab';
@@ -19,7 +18,6 @@ import DeleteTab from './components/DeleteTab';
 function App() {
   const [activeTab, setActiveTab] = useState('combine');
   const [toast, setToast] = useState(null);
-  const [recentTabs, setRecentTabs] = useState(['combine']);
   const [fileCounts, setFileCounts] = useState({});
 
   const tabs = [
@@ -34,13 +32,9 @@ function App() {
     { id: 'delete', label: '🗑️ Delete', component: DeleteTab, shortcut: '9' }
   ];
 
-  // Track tab switching for recent tabs
+  // Handle tab switching
   const handleTabClick = (tabId) => {
     setActiveTab(tabId);
-    setRecentTabs(prev => {
-      const filtered = prev.filter(id => id !== tabId);
-      return [tabId, ...filtered].slice(0, 3); // Keep last 3 recent
-    });
   };
 
   // Keyboard shortcuts handler
@@ -95,7 +89,6 @@ function App() {
       <UserGuide />
       <SecurityPledge />
       <SettingsPanel />
-      <FloatingActionMenu onTabSelect={handleTabClick} />
       {toast && <Toast message={toast.message} type={toast.type} />}
       <div className="container">
         <header className="header">
@@ -105,18 +98,16 @@ function App() {
 
         <div className="tabs">
           {tabs.map(tab => {
-            const isRecent = recentTabs.includes(tab.id);
             const fileCount = fileCounts[tab.id];
             return (
               <button
                 key={tab.id}
-                className={`tab-button ${activeTab === tab.id ? 'active' : ''} ${isRecent ? 'recent' : ''}`}
+                className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
                 onClick={() => handleTabClick(tab.id)}
                 title={`${tab.label} (Press ${tab.shortcut})${fileCount ? ` - ${fileCount} file(s)` : ''}`}
               >
                 {tab.label}
                 {fileCount > 0 && <span className="file-badge">{fileCount}</span>}
-                {isRecent && activeTab !== tab.id && <span className="recent-dot">•</span>}
               </button>
             );
           })}

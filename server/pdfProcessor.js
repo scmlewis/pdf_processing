@@ -182,24 +182,87 @@ class PDFProcessor {
   /**
    * Split PDF into separate files (one file per page)
    */
-  static async splitPDF(inputPath, outputDir) {
+  static async splitPDF(inputPath, outputDir, options = {}) {
     try {
       const pdfBytes = await fs.readFile(inputPath);
       const pdf = await PDFDocument.load(pdfBytes);
       const files = [];
+      const totalPages = pdf.getPageCount();
+      
+      const splitMode = options.splitMode || 'single';
+      const pagesPerFile = parseInt(options.pagesPerFile) || 1;
+      const pageRange = options.pageRange || `1-${totalPages}`;
 
-      for (let i = 0; i < pdf.getPageCount(); i++) {
+      // Parse page range (e.g., "1-5,10,15-20")
+      const parsePageRange = (rangeStr, totalPages) => {
+        const pages = [];
+        const parts = rangeStr.split(',').map(p => p.trim());
+        
+        for (const part of parts) {
+          if (part.includes('-')) {
+            const [start, end] = part.split('-').map(p => parseInt(p.trim()));
+            for (let i = Math.max(1, start); i <= Math.min(end, totalPages); i++) {
+              if (!pages.includes(i)) pages.push(i);
+            }
+          } else {
+            const page = parseInt(part.trim());
+            if (page >= 1 && page <= totalPages && !pages.includes(page)) {
+              pages.push(page);
+            }
+          }
+        }
+        return pages.sort((a, b) => a - b);
+      };
+
+      if (splitMode === 'single') {
+        // Single page per file
+        for (let i = 0; i < totalPages; i++) {
+          const newPdf = await PDFDocument.create();
+          const [page] = await newPdf.copyPages(pdf, [i]);
+          newPdf.addPage(page);
+
+          const outputPath = `${outputDir}/page_${i + 1}.pdf`;
+          const outputBytes = await newPdf.save();
+          await fs.writeFile(outputPath, outputBytes);
+          files.push(`page_${i + 1}.pdf`);
+        }
+      } else if (splitMode === 'multi') {
+        // Multiple pages per file
+        let fileIndex = 1;
+        for (let i = 0; i < totalPages; i += pagesPerFile) {
+          const newPdf = await PDFDocument.create();
+          const pagesToCopy = [];
+          for (let j = 0; j < pagesPerFile && i + j < totalPages; j++) {
+            pagesToCopy.push(i + j);
+          }
+          const pages = await newPdf.copyPages(pdf, pagesToCopy);
+          pages.forEach(page => newPdf.addPage(page));
+
+          const outputPath = `${outputDir}/split_${fileIndex}.pdf`;
+          const outputBytes = await newPdf.save();
+          await fs.writeFile(outputPath, outputBytes);
+          files.push(`split_${fileIndex}.pdf`);
+          fileIndex++;
+        }
+      } else if (splitMode === 'range') {
+        // Custom page range
+        const selectedPages = parsePageRange(pageRange, totalPages);
+        if (selectedPages.length === 0) {
+          throw new Error('No valid pages found in the specified range');
+        }
+
         const newPdf = await PDFDocument.create();
-        const [page] = await newPdf.copyPages(pdf, [i]);
-        newPdf.addPage(page);
+        const pagesToCopy = selectedPages.map(p => p - 1); // Convert to 0-based index
+        const pages = await newPdf.copyPages(pdf, pagesToCopy);
+        pages.forEach(page => newPdf.addPage(page));
 
-        const outputPath = `${outputDir}/page_${i + 1}.pdf`;
+        const outputPath = `${outputDir}/range_${selectedPages[0]}_${selectedPages[selectedPages.length - 1]}.pdf`;
         const outputBytes = await newPdf.save();
         await fs.writeFile(outputPath, outputBytes);
-        files.push(`page_${i + 1}.pdf`);
+        files.push(`range_${selectedPages[0]}_${selectedPages[selectedPages.length - 1]}.pdf`);
       }
 
-      return { success: true, files, message: `PDF split into ${files.length} files` };
+      return { success: true, files, message: `PDF split into ${files.length} file(s)` };
     } catch (error) {
       throw new Error(`Failed to split PDF: ${error.message}`);
     }

@@ -436,3 +436,103 @@
     font-size: 1.4em;
   }
 }
+
+/* Split Configuration Styles */
+.split-config {
+  background: var(--bg-secondary);
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  border-left: 4px solid var(--primary-color);
+  transition: all 0.3s ease;
+}
+
+.config-group {
+  margin-bottom: 20px;
+}
+
+.config-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text-color);
+  transition: color 0.3s ease;
+}
+
+.config-group small {
+  display: block;
+  color: var(--text-muted);
+  margin-top: 8px;
+  font-size: 0.85em;
+  transition: color 0.3s ease;
+}
+
+.split-mode-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.radio-option:hover {
+  border-color: var(--primary-color);
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.radio-option input[type="radio"] {
+  margin-right: 10px;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-color);
+}
+
+.radio-option span {
+  color: var(--text-color);
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.select-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 1em;
+  font-family: inherit;
+  background-color: var(--bg-primary);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.select-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+@media (max-width: 768px) {
+  .split-config {
+    padding: 15px;
+  }
+
+  .split-mode-options {
+    gap: 8px;
+  }
+
+  .radio-option {
+    padding: 8px 10px;
+    font-size: 0.9em;
+  }
+}
+

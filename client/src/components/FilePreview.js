@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './FilePreview.css';
 
-const FilePreview = ({ files = [] }) => {
+const FilePreview = ({ files = [], onRemoveFile = null }) => {
   const [pageInfo, setPageInfo] = useState({});
 
   const formatFileSize = (bytes) => {
@@ -71,6 +71,16 @@ const FilePreview = ({ files = [] }) => {
                 )}
               </div>
             </div>
+            {onRemoveFile && (
+              <button 
+                className="file-remove-btn" 
+                onClick={() => onRemoveFile(index)}
+                title="Remove this file"
+                aria-label={`Remove ${file.name}`}
+              >
+                ✕
+              </button>
+            )}
           </div>
         ))}
       </div>

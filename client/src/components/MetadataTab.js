@@ -66,7 +66,7 @@ function MetadataTab() {
       <ErrorAlert error={error} onDismiss={() => setError(null)} />
 
       <DragDropZone onFilesSelected={handleFilesSelected} multiple={false} label="Drag & drop a PDF to view metadata" />
-      {file && <FilePreview files={[file]} />}
+      {file && <FilePreview files={[file]} onRemoveFile={() => setFile(null)} />}
 
       {!loading && (
         <button onClick={handleGetMetadata} className="action-button" disabled={!file} style={{ marginTop: '20px' }}>

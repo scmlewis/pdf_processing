@@ -85,7 +85,7 @@ function ExtractTab() {
       <ErrorAlert error={error} onDismiss={() => setError(null)} />
 
       <DragDropZone onFilesSelected={handleFilesSelected} multiple={false} label="Drag & drop a PDF to extract pages" />
-      {file && <FilePreview files={[file]} />}
+      {file && <FilePreview files={[file]} onRemoveFile={() => setFile(null)} />}
 
       <div className="input-group" style={{ marginTop: '20px' }}>
         <label>Page Numbers (comma-separated, 1-based)</label>

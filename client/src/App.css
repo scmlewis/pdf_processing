@@ -151,30 +151,6 @@
   }
 }
 
-/* Recent tab indicator */
-.tab-button.recent:not(.active) {
-  border-color: var(--primary-color);
-  opacity: 0.8;
-}
-
-.recent-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  background: var(--primary-color);
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
 /* File count badge */
 .file-badge {
   display: inline-flex;

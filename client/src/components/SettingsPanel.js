@@ -117,6 +117,20 @@ function SettingsPanel() {
                   • Settings are saved locally in your browser
                 </p>
               </div>
+
+              {/* Author Info */}
+              <div className="settings-group info-group">
+                <h3>👨‍💻 About</h3>
+                <p className="info-text">
+                  PDF Processor - An open-source PDF manipulation tool
+                </p>
+                <p className="info-text">
+                  Built with React, Node.js, and Express
+                </p>
+                <a href="https://github.com/scmlewis/pdf_processing" target="_blank" rel="noopener noreferrer" className="github-link">
+                  View on GitHub →
+                </a>
+              </div>
             </div>
 
             <button

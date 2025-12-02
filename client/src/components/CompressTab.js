@@ -78,7 +78,7 @@ function CompressTab() {
       <ErrorAlert error={error} onDismiss={() => setError(null)} />
 
       <DragDropZone onFilesSelected={handleFilesSelected} multiple={false} label="Drag & drop a PDF to compress" />
-      {file && <FilePreview files={[file]} />}
+      {file && <FilePreview files={[file]} onRemoveFile={() => setFile(null)} />}
 
       {!loading && (
         <button onClick={handleCompress} className="action-button" disabled={!file} style={{ marginTop: '20px' }}>

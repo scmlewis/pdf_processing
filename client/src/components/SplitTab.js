@@ -12,11 +12,46 @@ function SplitTab() {
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [splitMode, setSplitMode] = useState('single'); // 'single', 'multi', 'range'
+  const [pagesPerFile, setPagesPerFile] = useState('1');
+  const [pageRange, setPageRange] = useState('1-5');
+  const [pageInfo, setPageInfo] = useState(null);
 
   const handleFilesSelected = (selectedFiles) => {
     if (selectedFiles.length > 0) {
       setFile(selectedFiles[0]);
       setError(null);
+      // Try to detect page count
+      detectPageCount(selectedFiles[0]);
+    }
+  };
+
+  const detectPageCount = async (file) => {
+    try {
+      if (!window.pdfjsLib) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        script.onload = () => {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          processFile();
+        };
+        document.head.appendChild(script);
+      } else {
+        processFile();
+      }
+
+      const processFile = async () => {
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await window.pdfjsLib.getDocument(arrayBuffer).promise;
+          setPageInfo(pdf.numPages);
+          setPageRange(`1-${pdf.numPages}`);
+        } catch (err) {
+          console.log('Could not detect page count');
+        }
+      };
+    } catch (err) {
+      console.log('Error detecting page count');
     }
   };
 
@@ -34,6 +69,15 @@ function SplitTab() {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('originalFilename', file.name);
+    formData.append('splitMode', splitMode);
+    
+    if (splitMode === 'single') {
+      formData.append('pagesPerFile', 1);
+    } else if (splitMode === 'multi') {
+      formData.append('pagesPerFile', parseInt(pagesPerFile));
+    } else if (splitMode === 'range') {
+      formData.append('pageRange', pageRange);
+    }
 
     try {
       const progressInterval = setInterval(() => {
@@ -78,13 +122,85 @@ function SplitTab() {
   return (
     <div className="tab-content">
       <h2>Split PDF</h2>
-      <p>Split a PDF into separate single-page files</p>
+      <p>Split a PDF with custom options</p>
 
       <ProgressIndicator isLoading={loading} progress={progress} message="Splitting PDF..." />
       <ErrorAlert error={error} onDismiss={() => setError(null)} />
 
       <DragDropZone onFilesSelected={handleFilesSelected} multiple={false} label="Drag & drop a PDF to split" />
-      {file && <FilePreview files={[file]} />}
+      {file && <FilePreview files={[file]} onRemoveFile={() => { setFile(null); setPageInfo(null); }} />}
+
+      {file && !loading && (
+        <div className="split-config">
+          <div className="config-group">
+            <label>Split Mode</label>
+            <div className="split-mode-options">
+              <label className="radio-option">
+                <input 
+                  type="radio" 
+                  value="single" 
+                  checked={splitMode === 'single'} 
+                  onChange={(e) => setSplitMode(e.target.value)}
+                />
+                <span>Single Page (1 page per file)</span>
+              </label>
+              <label className="radio-option">
+                <input 
+                  type="radio" 
+                  value="multi" 
+                  checked={splitMode === 'multi'} 
+                  onChange={(e) => setSplitMode(e.target.value)}
+                />
+                <span>Multiple Pages (custom pages per file)</span>
+              </label>
+              <label className="radio-option">
+                <input 
+                  type="radio" 
+                  value="range" 
+                  checked={splitMode === 'range'} 
+                  onChange={(e) => setSplitMode(e.target.value)}
+                />
+                <span>Custom Range (specific page range)</span>
+              </label>
+            </div>
+          </div>
+
+          {splitMode === 'multi' && (
+            <div className="config-group">
+              <label htmlFor="pagesPerFile">Pages Per File</label>
+              <select 
+                id="pagesPerFile"
+                value={pagesPerFile} 
+                onChange={(e) => setPagesPerFile(e.target.value)}
+                className="select-input"
+              >
+                <option value="1">1 page</option>
+                <option value="2">2 pages</option>
+                <option value="3">3 pages</option>
+                <option value="5">5 pages</option>
+                <option value="10">10 pages</option>
+              </select>
+              <small>Each output file will contain this many pages</small>
+            </div>
+          )}
+
+          {splitMode === 'range' && (
+            <div className="config-group">
+              <label htmlFor="pageRange">Page Range</label>
+              <input
+                id="pageRange"
+                type="text"
+                value={pageRange}
+                onChange={(e) => setPageRange(e.target.value)}
+                placeholder="1-10, 15, 20-25"
+                className="text-input"
+              />
+              <small>Examples: "1-5" (pages 1 to 5), "1,3,5" (specific pages), "10-20,25" (multiple ranges)</small>
+              {pageInfo && <small>Total pages: {pageInfo}</small>}
+            </div>
+          )}
+        </div>
+      )}
 
       {!loading && (
         <button onClick={handleSplit} className="action-button" disabled={!file} style={{ marginTop: '20px' }}>

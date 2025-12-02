@@ -86,7 +86,7 @@ function WatermarkTab() {
       <ErrorAlert error={error} onDismiss={() => setError(null)} />
 
       <DragDropZone onFilesSelected={handleFilesSelected} multiple={false} label="Drag & drop a PDF to watermark" />
-      {file && <FilePreview files={[file]} />}
+      {file && <FilePreview files={[file]} onRemoveFile={() => setFile(null)} />}
 
       <div className="input-group" style={{ marginTop: '20px' }}>
         <label>Watermark Text</label>

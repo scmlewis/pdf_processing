@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './FilePreview.css';
 
 const FilePreview = ({ files = [] }) => {
+  const [pageInfo, setPageInfo] = useState({});
+
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -9,6 +11,43 @@ const FilePreview = ({ files = [] }) => {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
+
+  useEffect(() => {
+    const detectPageCounts = async () => {
+      const newPageInfo = {};
+      
+      // Dynamically load PDF.js from CDN
+      if (!window.pdfjsLib) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        script.onload = () => {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          processFiles();
+        };
+        document.head.appendChild(script);
+      } else {
+        processFiles();
+      }
+
+      const processFiles = async () => {
+        for (let file of files) {
+          try {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await window.pdfjsLib.getDocument(arrayBuffer).promise;
+            newPageInfo[file.name] = pdf.numPages;
+          } catch (err) {
+            console.log(`Could not detect pages for ${file.name}`);
+            newPageInfo[file.name] = null;
+          }
+        }
+        setPageInfo(newPageInfo);
+      };
+    };
+
+    if (files.length > 0) {
+      detectPageCounts();
+    }
+  }, [files]);
 
   if (files.length === 0) {
     return null;
@@ -23,7 +62,14 @@ const FilePreview = ({ files = [] }) => {
             <div className="file-icon">📄</div>
             <div className="file-info">
               <p className="file-name">{file.name}</p>
-              <p className="file-size">{formatFileSize(file.size)}</p>
+              <div className="file-meta">
+                <span className="file-size">{formatFileSize(file.size)}</span>
+                {pageInfo[file.name] && (
+                  <span className="file-pages">
+                    {pageInfo[file.name]} page{pageInfo[file.name] !== 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         ))}

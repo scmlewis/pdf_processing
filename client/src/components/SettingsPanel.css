@@ -1,7 +1,7 @@
 /* Settings Toggle Button */
 .settings-toggle {
   position: fixed;
-  bottom: 30px;
+  bottom: 100px;
   left: 30px;
   width: 60px;
   height: 60px;
@@ -306,7 +306,7 @@
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .settings-toggle {
-    bottom: 80px;
+    bottom: 100px;
     left: 20px;
     width: 50px;
     height: 50px;

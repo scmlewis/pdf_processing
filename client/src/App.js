@@ -3,6 +3,7 @@ import './App.css';
 import ThemeToggle from './components/ThemeToggle';
 import UserGuide from './components/UserGuide';
 import SecurityPledge from './components/SecurityPledge';
+import SettingsPanel from './components/SettingsPanel';
 import FloatingActionMenu from './components/FloatingActionMenu';
 import Toast from './components/Toast';
 import CombineTab from './components/CombineTab';
@@ -93,6 +94,7 @@ function App() {
       <ThemeToggle />
       <UserGuide />
       <SecurityPledge />
+      <SettingsPanel />
       <FloatingActionMenu onTabSelect={handleTabClick} />
       {toast && <Toast message={toast.message} type={toast.type} />}
       <div className="container">

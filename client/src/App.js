@@ -15,7 +15,6 @@ import MetadataTab from './components/MetadataTab';
 import SplitTab from './components/SplitTab';
 import DeleteTab from './components/DeleteTab';
 import AddPageNumbersTab from './components/AddPageNumbersTab';
-import ProtectTab from './components/ProtectTab';
 
 function App() {
   const [activeTab, setActiveTab] = useState('combine');
@@ -32,8 +31,7 @@ function App() {
     { id: 'metadata', label: '📋 Metadata', component: MetadataTab, shortcut: '7' },
     { id: 'split', label: '⚡ Split', component: SplitTab, shortcut: '8' },
     { id: 'delete', label: '🗑️ Delete', component: DeleteTab, shortcut: '9' },
-    { id: 'addpagenumbers', label: '🔢 Page Numbers', component: AddPageNumbersTab, shortcut: '0' },
-    { id: 'protect', label: '🔒 Protect', component: ProtectTab, shortcut: 'P' }
+    { id: 'addpagenumbers', label: '🔢 Page Numbers', component: AddPageNumbersTab, shortcut: '0' }
   ];
 
   // Handle tab switching

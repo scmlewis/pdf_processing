@@ -1,14 +1,5 @@
-# Use Debian-based Node image for better package support
-FROM node:18-bullseye
-
-# Update and install qpdf
-RUN apt-get update && \
-    apt-get install -y qpdf && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Test qpdf is installed
-RUN qpdf --version && which qpdf
+# Use Node.js official image
+FROM node:18
 
 # Set working directory
 WORKDIR /app

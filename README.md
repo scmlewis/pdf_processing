@@ -15,7 +15,6 @@ A full-stack web application for processing, combining, and manipulating PDF fil
 - ✅ **Split PDF** - Split PDF into individual page files
 - ✅ **Delete Pages** - Remove specific pages from a PDF (supports page ranges)
 - ✅ **Add Page Numbers** - Add customizable page numbers (6 positions, 3 formats, custom ranges)
-- ✅ **Protect PDF** - Encrypt PDFs with password protection (AES-256) and permissions
 
 ### Enhanced Features
 - 📄 **Page Thumbnails** - Visual preview of all pages in grid layout
@@ -66,7 +65,6 @@ pdf_processing/
 - **Node.js** - JavaScript runtime
 - **Express.js** - Web framework
 - **pdf-lib** - PDF manipulation library
-- **QPDF** - PDF encryption and security (AES-256)
 - **multer** - File upload middleware
 - **CORS** - Cross-Origin Resource Sharing
 
@@ -85,10 +83,6 @@ pdf_processing/
 ### Prerequisites
 - Node.js (v14 or higher)
 - npm (v6 or higher)
-- **QPDF** (for PDF encryption feature)
-  - Windows: `winget install QPDF.QPDF`
-  - macOS: `brew install qpdf`
-  - Linux: `apt-get install qpdf` or `yum install qpdf`
 
 ### Setup
 
@@ -191,14 +185,6 @@ Add page numbers to a PDF
 - **fontSize:** Font size (8-72)
 - **pageRange:** Optional page range (e.g., "1-5,10")
 - **Response:** Download URL for numbered PDF
-
-### POST /api/pdf/protect
-Protect PDF with password and permissions
-- **File:** PDF file
-- **userPassword:** Password to open the PDF
-- **ownerPassword:** Optional owner password
-- **permissions:** Object with permission settings (printing, modifying, copying, etc.)
-- **Response:** Download URL for encrypted PDF
 
 ### File:** PDF file
 - **pageIndices:** Array of page indices to delete

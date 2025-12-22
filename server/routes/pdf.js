@@ -431,44 +431,4 @@ router.post('/add-page-numbers', upload.single('pdf'), handleMulterError, async 
   }
 });
 
-/**
- * Protect PDF with password
- */
-router.post('/protect', upload.single('pdf'), handleMulterError, async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-
-    const options = {
-      userPassword: req.body.userPassword || '',
-      ownerPassword: req.body.ownerPassword || '',
-      permissions: {
-        printing: req.body.allowPrinting !== 'false' ? 'highResolution' : 'lowResolution',
-        modifying: req.body.allowModifying === 'true',
-        copying: req.body.allowCopying === 'true',
-        annotating: req.body.allowAnnotating === 'true',
-        fillingForms: req.body.allowFillingForms === 'true',
-        contentAccessibility: req.body.allowContentAccessibility !== 'false',
-        documentAssembly: req.body.allowDocumentAssembly === 'true'
-      }
-    };
-
-    const pdfBytes = await PDFProcessor.protectPDF(req.file.path, options);
-
-    // Clean up uploaded file
-    await fs.unlink(req.file.path).catch(() => {});
-
-    // Send the PDF
-    res.contentType('application/pdf');
-    res.send(Buffer.from(pdfBytes));
-  } catch (error) {
-    console.error('Protect PDF error:', error);
-    if (req.file) {
-      await fs.unlink(req.file.path).catch(() => {});
-    }
-    res.status(500).json({ error: error.message || 'Failed to protect PDF' });
-  }
-});
-
 module.exports = router;

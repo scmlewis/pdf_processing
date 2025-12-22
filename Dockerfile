@@ -1,16 +1,27 @@
 # Use Node.js official image
 FROM node:18
 
-# Install qpdf system package (force rebuild)
+# Install dependencies for qpdf
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends qpdf && \
-    rm -rf /var/lib/apt/lists/* && \
-    echo "qpdf installation complete"
+    apt-get install -y --no-install-recommends \
+    wget \
+    ca-certificates \
+    libjpeg62-turbo \
+    zlib1g \
+    libgnutls30 && \
+    rm -rf /var/lib/apt/lists/*
+
+# Download and install qpdf from GitHub releases
+RUN cd /tmp && \
+    wget https://github.com/qpdf/qpdf/releases/download/v11.9.0/qpdf-11.9.0-x86_64.AppImage && \
+    chmod +x qpdf-11.9.0-x86_64.AppImage && \
+    ./qpdf-11.9.0-x86_64.AppImage --appimage-extract && \
+    mv squashfs-root /opt/qpdf && \
+    ln -s /opt/qpdf/usr/bin/qpdf /usr/local/bin/qpdf && \
+    rm qpdf-11.9.0-x86_64.AppImage
 
 # Verify qpdf installation
-RUN which qpdf || echo "ERROR: qpdf not found in PATH"
-RUN qpdf --version || echo "ERROR: qpdf command failed"
-RUN ls -la /usr/bin/qpdf || echo "ERROR: /usr/bin/qpdf does not exist"
+RUN qpdf --version
 
 # Set working directory
 WORKDIR /app

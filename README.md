@@ -6,14 +6,24 @@ A full-stack web application for processing, combining, and manipulating PDF fil
 
 ### Core Operations
 - ✅ **Combine PDFs** - Merge multiple PDF files into a single document
-- ✅ **Extract Pages** - Extract specific pages from a PDF
-- ✅ **Reorder Pages** - Rearrange pages in custom order
-- ✅ **Rotate Pages** - Rotate specific pages (90°, 180°, 270°)
+- ✅ **Extract Pages** - Extract specific pages from a PDF (supports page ranges)
+- ✅ **Reorder Pages** - Rearrange pages via drag-and-drop interface
+- ✅ **Rotate Pages** - Rotate specific pages (90°, 180°, 270°) with page range support
 - ✅ **Add Watermark** - Add text watermarks with customizable options
 - ✅ **Compress PDF** - Reduce PDF file size
 - ✅ **View Metadata** - Display PDF information and page dimensions
 - ✅ **Split PDF** - Split PDF into individual page files
-- ✅ **Delete Pages** - Remove specific pages from a PDF
+- ✅ **Delete Pages** - Remove specific pages from a PDF (supports page ranges)
+- ✅ **Add Page Numbers** - Add customizable page numbers (6 positions, 3 formats, custom ranges)
+- ✅ **Protect PDF** - Encrypt PDFs with password protection (AES-256) and permissions
+
+### Enhanced Features
+- 📄 **Page Thumbnails** - Visual preview of all pages in grid layout
+- 📊 **Progress Indicators** - Real-time progress bars with ETA for all operations
+- 📁 **Recent Files** - Track recently processed files with quick access
+- ✅ **File Validation** - Pre-upload validation (50MB limit, PDF-only, 50 files max)
+- 🔢 **Page Range Parser** - Support for complex ranges like "1-5,7,10-15"
+- 🎨 **Modern UI** - Dark/light theme support with responsive design
 
 ## Project Structure
 
@@ -56,19 +66,29 @@ pdf_processing/
 - **Node.js** - JavaScript runtime
 - **Express.js** - Web framework
 - **pdf-lib** - PDF manipulation library
+- **QPDF** - PDF encryption and security (AES-256)
 - **multer** - File upload middleware
 - **CORS** - Cross-Origin Resource Sharing
 
 ### Frontend
 - **React 18** - UI library
 - **Axios** - HTTP client
-- **CSS3** - Styling with modern features
+- **react-beautiful-dnd** - Drag-and-drop page reordering
+- **CSS3** - Modern styling with CSS variables
+
+### Deployment
+- **Render.com** - Cloud hosting with auto-deploy from GitHub
+- **Live URL:** https://pdf-processor-uugw.onrender.com
 
 ## Installation
 
 ### Prerequisites
 - Node.js (v14 or higher)
 - npm (v6 or higher)
+- **QPDF** (for PDF encryption feature)
+  - Windows: `winget install QPDF.QPDF`
+  - macOS: `brew install qpdf`
+  - Linux: `apt-get install qpdf` or `yum install qpdf`
 
 ### Setup
 
@@ -163,7 +183,24 @@ Split PDF into individual page files
 
 ### POST /api/pdf/delete-pages
 Delete specific pages from a PDF
+- **POST /api/pdf/add-page-numbers
+Add page numbers to a PDF
 - **File:** PDF file
+- **position:** Position (top-left, top-center, top-right, bottom-left, bottom-center, bottom-right)
+- **format:** Format (numeric, roman, alphabetic)
+- **fontSize:** Font size (8-72)
+- **pageRange:** Optional page range (e.g., "1-5,10")
+- **Response:** Download URL for numbered PDF
+
+### POST /api/pdf/protect
+Protect PDF with password and permissions
+- **File:** PDF file
+- **userPassword:** Password to open the PDF
+- **ownerPassword:** Optional owner password
+- **permissions:** Object with permission settings (printing, modifying, copying, etc.)
+- **Response:** Download URL for encrypted PDF
+
+### File:** PDF file
 - **pageIndices:** Array of page indices to delete
 - **Response:** Download URL for modified PDF
 
@@ -181,14 +218,28 @@ NODE_ENV=development
 ## Troubleshooting
 
 ### Port already in use
-Change the PORT in `.env` or use:
-```bash
-npm start -- --port 3001
-```
+ChaRecent Updates
 
-### CORS errors
-Make sure both servers are running and the proxy is configured correctly in `client/package.json`
+### Version 2.0 (December 2025)
+- ✅ Added **Page Numbers** feature with customizable positioning and formatting
+- ✅ Added **Protect PDF** feature with AES-256 encryption
+- ✅ Implemented drag-and-drop page reordering
+- ✅ Added visual page thumbnails for all operations
+- ✅ Enhanced progress indicators with ETA
+- ✅ Added recent files tracking
+- ✅ Implemented page range parser (e.g., "1-5,8,10-15")
+- ✅ Added pre-upload file validation
+- ✅ Migrated from Vercel to Render.com for better reliability
 
+## Future Enhancements
+
+- 📸 PDF to JPG conversion
+- 🔓 Unlock/decrypt protected PDFs
+- ✂️ Crop pages functionality
+- 🖼️ JPG to PDF conversion
+- 📝 OCR capabilities
+- 📎 Digital signatures
+- 🗂️ Batch processing improvements
 ### Large file uploads
 Modify multer settings in `server/routes/pdf.js` if needed for larger files
 

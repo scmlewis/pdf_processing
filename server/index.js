@@ -25,17 +25,21 @@ if (!fs.existsSync(uploadsDir)) {
 
 // Check if qpdf is available
 try {
-  const qpdfCheck = spawn('qpdf', ['--version']);
-  qpdfCheck.on('close', (code) => {
-    if (code === 0) {
-      console.log('[Startup] ✓ qpdf is available');
-    } else {
-      console.error('[Startup] ✗ qpdf check failed with code:', code);
+  const { execSync } = require('child_process');
+  try {
+    const qpdfVersion = execSync('qpdf --version', { encoding: 'utf8' });
+    console.log('[Startup] ✓ qpdf is available:', qpdfVersion.split('\n')[0]);
+    
+    // Also check which qpdf
+    try {
+      const qpdfPath = execSync('which qpdf', { encoding: 'utf8' }).trim();
+      console.log('[Startup] qpdf location:', qpdfPath);
+    } catch (e) {
+      console.log('[Startup] Could not determine qpdf path');
     }
-  });
-  qpdfCheck.on('error', (err) => {
-    console.error('[Startup] ✗ qpdf not found:', err.message);
-  });
+  } catch (err) {
+    console.error('[Startup] ✗ qpdf not found or not working:', err.message);
+  }
 } catch (err) {
   console.error('[Startup] ✗ Failed to check qpdf:', err.message);
 }

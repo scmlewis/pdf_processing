@@ -656,8 +656,38 @@ class PDFProcessor {
       // Execute qpdf command
       console.log('[protectPDF] Executing qpdf with args:', args);
       
-      // Use full path to qpdf binary (Linux/Docker path)
-      const qpdfPath = process.platform === 'win32' ? 'qpdf' : '/usr/bin/qpdf';
+      // Try to find qpdf binary
+      const { execSync } = require('child_process');
+      let qpdfPath = 'qpdf';
+      
+      try {
+        // Try to find qpdf using 'which' command (Linux/Mac)
+        qpdfPath = execSync('which qpdf', { encoding: 'utf8' }).trim();
+        console.log('[protectPDF] Found qpdf at:', qpdfPath);
+      } catch (err) {
+        console.log('[protectPDF] which qpdf failed, trying common paths...');
+        // Try common installation paths
+        const possiblePaths = [
+          '/usr/bin/qpdf',
+          '/usr/local/bin/qpdf',
+          '/bin/qpdf',
+          'qpdf'
+        ];
+        
+        for (const p of possiblePaths) {
+          try {
+            const fs = require('fs');
+            if (fs.existsSync(p)) {
+              qpdfPath = p;
+              console.log('[protectPDF] Found qpdf at:', p);
+              break;
+            }
+          } catch (e) {
+            // Continue
+          }
+        }
+      }
+      
       console.log('[protectPDF] Using qpdf path:', qpdfPath);
       
       await new Promise((resolve, reject) => {

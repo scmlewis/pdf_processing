@@ -4,6 +4,9 @@ FROM node:18
 # Install qpdf system package
 RUN apt-get update && apt-get install -y qpdf && rm -rf /var/lib/apt/lists/*
 
+# Verify qpdf installation
+RUN which qpdf && qpdf --version
+
 # Set working directory
 WORKDIR /app
 

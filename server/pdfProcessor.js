@@ -656,8 +656,12 @@ class PDFProcessor {
       // Execute qpdf command
       console.log('[protectPDF] Executing qpdf with args:', args);
       
+      // Use full path to qpdf binary (Linux/Docker path)
+      const qpdfPath = process.platform === 'win32' ? 'qpdf' : '/usr/bin/qpdf';
+      console.log('[protectPDF] Using qpdf path:', qpdfPath);
+      
       await new Promise((resolve, reject) => {
-        const qpdf = spawn('qpdf', args);
+        const qpdf = spawn(qpdfPath, args);
         
         let stderr = '';
         let stdout = '';

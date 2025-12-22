@@ -24,5 +24,8 @@ RUN cd client && npm run build
 # Expose port
 EXPOSE 5000
 
+# Set PORT environment variable for Render
+ENV PORT=5000
+
 # Start server
 CMD ["node", "server/index.js"]

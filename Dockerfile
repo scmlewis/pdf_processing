@@ -21,6 +21,9 @@ COPY . .
 # Build React client
 RUN cd client && npm run build
 
+# Create uploads directory with proper permissions
+RUN mkdir -p /app/server/uploads && chmod 777 /app/server/uploads
+
 # Expose port
 EXPOSE 5000
 

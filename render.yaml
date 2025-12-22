@@ -1,8 +1,8 @@
-services:
+﻿services:
   - type: web
     name: pdf-processor
     env: node
-    buildCommand: chmod +x render-build.sh && ./render-build.sh
+    buildCommand: apt-get update && apt-get install -y qpdf && npm install && cd client && npm install && npm run build && cd ..
     startCommand: node server/index.js
     envVars:
       - key: NODE_VERSION

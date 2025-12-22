@@ -88,7 +88,8 @@ class PDFProcessor {
         if (pageIndex >= 0 && pageIndex < pdf.getPageCount()) {
           const page = pdf.getPage(pageIndex);
           const currentRotation = page.getRotation().angle || 0;
-          page.setRotation({ angle: currentRotation + angle });
+          const newRotation = (currentRotation + angle) % 360;
+          page.setRotation(degrees(newRotation));
         }
       }
 
@@ -342,7 +343,9 @@ class PDFProcessor {
       for (const pageIndex of pageIndices) {
         if (pageIndex >= 0 && pageIndex < pdf.getPageCount()) {
           const page = pdf.getPage(pageIndex);
-          page.setRotation((page.getRotation().angle + angle) % 360);
+          const currentRotation = page.getRotation().angle;
+          const newRotation = (currentRotation + angle) % 360;
+          page.setRotation(degrees(newRotation));
         }
       }
 

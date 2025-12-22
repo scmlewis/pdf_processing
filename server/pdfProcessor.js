@@ -4,6 +4,7 @@
 
 const { PDFDocument, PDFPage, rgb, degrees } = require('pdf-lib');
 const fs = require('fs').promises;
+const { encrypt } = require('node-qpdf');
 
 class PDFProcessor {
   /**
@@ -580,7 +581,7 @@ class PDFProcessor {
   }
 
   /**
-   * Protect PDF with password
+   * Protect PDF with password using node-qpdf
    */
   static async protectPDF(inputPath, options = {}) {
     try {
@@ -602,26 +603,70 @@ class PDFProcessor {
         throw new Error('At least one password (user or owner) is required');
       }
 
-      const pdfBytes = await fs.readFile(inputPath);
-      const pdfDoc = await PDFDocument.load(pdfBytes);
-
-      // Prepare encryption options
+      // Prepare encryption options for node-qpdf
       const encryptOptions = {
-        userPassword: userPassword || '',
-        ownerPassword: ownerPassword || userPassword, // Use user password as owner password if not provided
-        permissions: {
-          printing: permissions.printing || 'highResolution',
-          modifying: permissions.modifying !== false,
-          copying: permissions.copying !== false,
-          annotating: permissions.annotating !== false,
-          fillingForms: permissions.fillingForms !== false,
-          contentAccessibility: permissions.contentAccessibility !== false,
-          documentAssembly: permissions.documentAssembly !== false,
-        }
+        input: inputPath,
+        keyLength: 256, // AES-256 encryption
       };
 
-      const protectedPdfBytes = await pdfDoc.save(encryptOptions);
-      return protectedPdfBytes;
+      // Set passwords
+      if (userPassword) {
+        encryptOptions.password = userPassword;
+      }
+      if (ownerPassword) {
+        encryptOptions.ownerPassword = ownerPassword;
+      } else if (userPassword) {
+        encryptOptions.ownerPassword = userPassword; // Use user password as owner if not provided
+      }
+
+      // Set restrictions (inverted logic - qpdf uses 'restrictions' for what to DISALLOW)
+      const restrictions = {};
+      
+      // Printing
+      if (permissions.printing === false || permissions.printing === 'false') {
+        restrictions.print = 'none';
+      } else if (permissions.printing === 'lowResolution') {
+        restrictions.print = 'low';
+      } else {
+        restrictions.print = 'full'; // highResolution
+      }
+
+      // Modify
+      if (!permissions.modifying && permissions.modifying !== 'true') {
+        restrictions.modify = 'none';
+      }
+
+      // Extract/Copy
+      if (!permissions.copying && permissions.copying !== 'true') {
+        restrictions.extract = 'n';
+      }
+
+      // Annotate
+      if (!permissions.annotating && permissions.annotating !== 'true') {
+        restrictions.annotate = 'n';
+      }
+
+      // Form filling
+      if (!permissions.fillingForms && permissions.fillingForms !== 'true') {
+        restrictions.forms = 'n';
+      }
+
+      // Accessibility (for screen readers)
+      if (!permissions.contentAccessibility && permissions.contentAccessibility !== 'true') {
+        restrictions.accessibility = 'n';
+      }
+
+      // Document assembly
+      if (!permissions.documentAssembly && permissions.documentAssembly !== 'true') {
+        restrictions.assemble = 'n';
+      }
+
+      encryptOptions.restrictions = restrictions;
+
+      // Encrypt the PDF and return the buffer
+      const encryptedBuffer = await encrypt(encryptOptions);
+      return encryptedBuffer;
+      
     } catch (error) {
       throw new Error(`Failed to protect PDF: ${error.message}`);
     }

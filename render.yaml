@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: pdf-processor
+    env: node
+    buildCommand: chmod +x render-build.sh && ./render-build.sh
+    startCommand: node server/index.js
+    envVars:
+      - key: NODE_VERSION
+        value: 18.x

@@ -6,6 +6,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const { spawn } = require('child_process');
 require('dotenv').config();
 
 const pdfRoutes = require('./routes/pdf');
@@ -20,6 +21,23 @@ if (!fs.existsSync(uploadsDir)) {
   console.log('[Startup] Created uploads directory:', uploadsDir);
 } else {
   console.log('[Startup] Uploads directory exists:', uploadsDir);
+}
+
+// Check if qpdf is available
+try {
+  const qpdfCheck = spawn('qpdf', ['--version']);
+  qpdfCheck.on('close', (code) => {
+    if (code === 0) {
+      console.log('[Startup] ✓ qpdf is available');
+    } else {
+      console.error('[Startup] ✗ qpdf check failed with code:', code);
+    }
+  });
+  qpdfCheck.on('error', (err) => {
+    console.error('[Startup] ✗ qpdf not found:', err.message);
+  });
+} catch (err) {
+  console.error('[Startup] ✗ Failed to check qpdf:', err.message);
 }
 
 // Try multiple possible build locations for different deployment environments

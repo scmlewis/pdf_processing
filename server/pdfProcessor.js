@@ -654,16 +654,27 @@ class PDFProcessor {
       args.push(outputPath);
       
       // Execute qpdf command
+      console.log('[protectPDF] Executing qpdf with args:', args);
+      
       await new Promise((resolve, reject) => {
         const qpdf = spawn('qpdf', args);
         
         let stderr = '';
+        let stdout = '';
+        
+        qpdf.stdout.on('data', (data) => {
+          stdout += data.toString();
+        });
         
         qpdf.stderr.on('data', (data) => {
           stderr += data.toString();
         });
         
         qpdf.on('close', (code) => {
+          console.log('[protectPDF] qpdf exit code:', code);
+          if (stdout) console.log('[protectPDF] stdout:', stdout);
+          if (stderr) console.log('[protectPDF] stderr:', stderr);
+          
           if (code === 0 || code === 3) {
             // Code 0 = success, Code 3 = warnings but success
             resolve();
@@ -673,6 +684,7 @@ class PDFProcessor {
         });
         
         qpdf.on('error', (err) => {
+          console.error('[protectPDF] spawn error:', err);
           reject(new Error(`Failed to spawn qpdf: ${err.message}`));
         });
       });

@@ -16,19 +16,7 @@ const FilePreview = ({ files = [], onRemoveFile = null }) => {
     const detectPageCounts = async () => {
       const newPageInfo = {};
       
-      // Dynamically load PDF.js from CDN
-      if (!window.pdfjsLib) {
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-        script.onload = () => {
-          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-          processFiles();
-        };
-        document.head.appendChild(script);
-      } else {
-        processFiles();
-      }
-
+      // Define processFiles first before using it
       const processFiles = async () => {
         for (let file of files) {
           try {
@@ -42,6 +30,19 @@ const FilePreview = ({ files = [], onRemoveFile = null }) => {
         }
         setPageInfo(newPageInfo);
       };
+
+      // Dynamically load PDF.js from CDN
+      if (!window.pdfjsLib) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        script.onload = () => {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          processFiles();
+        };
+        document.head.appendChild(script);
+      } else {
+        processFiles();
+      }
     };
 
     if (files.length > 0) {

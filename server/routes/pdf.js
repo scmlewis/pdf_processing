@@ -30,7 +30,8 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage,
   limits: {
-    fileSize: 200 * 1024 * 1024 // 200MB per file
+    fileSize: 50 * 1024 * 1024, // 50MB per file - reduced from 200MB for better performance
+    files: 50 // Maximum 50 files
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'application/pdf') {
@@ -41,11 +42,34 @@ const upload = multer({
   }
 });
 
+// Error handler for multer errors
+const handleMulterError = (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ 
+        error: 'File too large. Maximum file size is 50MB per file.' 
+      });
+    }
+    if (err.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({ 
+        error: 'Too many files. Maximum is 50 files at once.' 
+      });
+    }
+    if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+      return res.status(400).json({ 
+        error: 'Unexpected file field.' 
+      });
+    }
+    return res.status(400).json({ error: err.message });
+  }
+  next(err);
+};
+
 /**
  * POST /api/pdf/combine
  * Combine multiple PDFs
  */
-router.post('/combine', upload.array('files', 50), async (req, res) => {
+router.post('/combine', upload.array('files', 50), handleMulterError, async (req, res) => {
   try {
     if (!req.files || req.files.length < 2) {
       return res.status(400).json({ error: 'Please upload at least 2 PDF files (maximum 50 files per request)' });
@@ -67,7 +91,7 @@ router.post('/combine', upload.array('files', 50), async (req, res) => {
  * POST /api/pdf/extract
  * Extract specific pages from a PDF
  */
-router.post('/extract', upload.single('file'), async (req, res) => {
+router.post('/extract', upload.single('file'), handleMulterError, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No PDF file uploaded' });
@@ -316,6 +340,134 @@ router.get('/download/:filename', (req, res) => {
   } catch (error) {
     console.error('Download error:', error);
     res.status(500).json({ error: 'Failed to download file' });
+  }
+});
+
+/**
+ * POST /api/pdf/info
+ * Get PDF information including page count and dimensions
+ */
+router.post('/info', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const info = await PDFProcessor.getPDFInfo(req.file.path);
+    
+    // Clean up uploaded file
+    await fs.unlink(req.file.path);
+
+    res.json(info);
+  } catch (error) {
+    console.error('Get info error:', error);
+    if (req.file) {
+      await fs.unlink(req.file.path).catch(() => {});
+    }
+    res.status(500).json({ error: error.message || 'Failed to get PDF info' });
+  }
+});
+
+/**
+ * POST /api/pdf/thumbnails
+ * Generate thumbnails for PDF pages
+ */
+router.post('/thumbnails', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const pageIndices = req.body.pages ? JSON.parse(req.body.pages) : null;
+    const maxWidth = req.body.maxWidth ? parseInt(req.body.maxWidth) : 200;
+
+    const thumbnails = await PDFProcessor.generateThumbnails(req.file.path, pageIndices, maxWidth);
+    
+    // Clean up uploaded file
+    await fs.unlink(req.file.path);
+
+    res.json({ thumbnails });
+  } catch (error) {
+    console.error('Generate thumbnails error:', error);
+    if (req.file) {
+      await fs.unlink(req.file.path).catch(() => {});
+    }
+    res.status(500).json({ error: error.message || 'Failed to generate thumbnails' });
+  }
+});
+
+/**
+ * Add page numbers to PDF
+ */
+router.post('/add-page-numbers', upload.single('pdf'), handleMulterError, async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const options = {
+      position: req.body.position || 'bottom-right',
+      format: req.body.format || 'number',
+      startNumber: parseInt(req.body.startNumber) || 1,
+      pageRange: req.body.pageRange || '',
+      fontSize: parseInt(req.body.fontSize) || 12,
+      margin: parseInt(req.body.margin) || 20
+    };
+
+    const pdfBytes = await PDFProcessor.addPageNumbers(req.file.path, options);
+
+    // Clean up uploaded file
+    await fs.unlink(req.file.path).catch(() => {});
+
+    // Send the PDF
+    res.contentType('application/pdf');
+    res.send(Buffer.from(pdfBytes));
+  } catch (error) {
+    console.error('Add page numbers error:', error);
+    if (req.file) {
+      await fs.unlink(req.file.path).catch(() => {});
+    }
+    res.status(500).json({ error: error.message || 'Failed to add page numbers' });
+  }
+});
+
+/**
+ * Protect PDF with password
+ */
+router.post('/protect', upload.single('pdf'), handleMulterError, async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const options = {
+      userPassword: req.body.userPassword || '',
+      ownerPassword: req.body.ownerPassword || '',
+      permissions: {
+        printing: req.body.allowPrinting !== 'false' ? 'highResolution' : 'lowResolution',
+        modifying: req.body.allowModifying === 'true',
+        copying: req.body.allowCopying === 'true',
+        annotating: req.body.allowAnnotating === 'true',
+        fillingForms: req.body.allowFillingForms === 'true',
+        contentAccessibility: req.body.allowContentAccessibility !== 'false',
+        documentAssembly: req.body.allowDocumentAssembly === 'true'
+      }
+    };
+
+    const pdfBytes = await PDFProcessor.protectPDF(req.file.path, options);
+
+    // Clean up uploaded file
+    await fs.unlink(req.file.path).catch(() => {});
+
+    // Send the PDF
+    res.contentType('application/pdf');
+    res.send(Buffer.from(pdfBytes));
+  } catch (error) {
+    console.error('Protect PDF error:', error);
+    if (req.file) {
+      await fs.unlink(req.file.path).catch(() => {});
+    }
+    res.status(500).json({ error: error.message || 'Failed to protect PDF' });
   }
 });
 

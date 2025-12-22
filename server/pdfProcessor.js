@@ -2,7 +2,7 @@
  * PDF processing utilities using pdf-lib
  */
 
-const { PDFDocument, PDFPage, rgb } = require('pdf-lib');
+const { PDFDocument, PDFPage, rgb, degrees } = require('pdf-lib');
 const fs = require('fs').promises;
 
 class PDFProcessor {
@@ -400,6 +400,230 @@ class PDFProcessor {
       return await pdf.save();
     } catch (error) {
       throw new Error(`Failed to delete pages: ${error.message}`);
+    }
+  }
+
+  /**
+   * Generate thumbnail images for PDF pages
+   */
+  static async generateThumbnails(inputPath, pageIndices = null, maxWidth = 200) {
+    try {
+      const pdfBytes = await fs.readFile(inputPath);
+      const pdf = await PDFDocument.load(pdfBytes);
+      const pageCount = pdf.getPageCount();
+      const thumbnails = [];
+
+      // If no specific pages requested, generate for all pages
+      const pagesToProcess = pageIndices || Array.from({ length: pageCount }, (_, i) => i);
+
+      for (const pageIndex of pagesToProcess) {
+        if (pageIndex >= 0 && pageIndex < pageCount) {
+          const page = pdf.getPage(pageIndex);
+          const { width, height } = page.getSize();
+          
+          // Calculate scaled dimensions
+          const scale = maxWidth / width;
+          const thumbWidth = Math.floor(width * scale);
+          const thumbHeight = Math.floor(height * scale);
+
+          thumbnails.push({
+            pageIndex,
+            width: thumbWidth,
+            height: thumbHeight,
+            originalWidth: width,
+            originalHeight: height
+          });
+        }
+      }
+
+      return thumbnails;
+    } catch (error) {
+      throw new Error(`Failed to generate thumbnails: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get basic PDF info including page count and dimensions
+   */
+  static async getPDFInfo(inputPath) {
+    try {
+      const pdfBytes = await fs.readFile(inputPath);
+      const pdf = await PDFDocument.load(pdfBytes);
+      const pageCount = pdf.getPageCount();
+      const pages = [];
+
+      for (let i = 0; i < pageCount; i++) {
+        const page = pdf.getPage(i);
+        const { width, height } = page.getSize();
+        pages.push({ pageNumber: i + 1, width, height });
+      }
+
+      return { pageCount, pages };
+    } catch (error) {
+      throw new Error(`Failed to get PDF info: ${error.message}`);
+    }
+  }
+
+  /**
+   * Add page numbers to PDF
+   */
+  static async addPageNumbers(inputPath, options = {}) {
+    try {
+      const {
+        position = 'bottom-right',
+        format = 'number',
+        startNumber = 1,
+        pageRange = '',
+        fontSize = 12,
+        margin = 20
+      } = options;
+
+      const pdfBytes = await fs.readFile(inputPath);
+      const pdfDoc = await PDFDocument.load(pdfBytes);
+      const pages = pdfDoc.getPages();
+      const totalPages = pages.length;
+
+      // Parse page range if provided
+      let pagesToNumber = [];
+      if (pageRange && pageRange.trim() !== '') {
+        const ranges = pageRange.split(',').map(s => s.trim());
+        for (const range of ranges) {
+          if (range.includes('-')) {
+            const [start, end] = range.split('-').map(n => parseInt(n.trim()));
+            for (let i = start; i <= end; i++) {
+              if (i >= 1 && i <= totalPages) {
+                pagesToNumber.push(i - 1); // Convert to 0-indexed
+              }
+            }
+          } else {
+            const pageNum = parseInt(range);
+            if (pageNum >= 1 && pageNum <= totalPages) {
+              pagesToNumber.push(pageNum - 1); // Convert to 0-indexed
+            }
+          }
+        }
+        // Remove duplicates
+        pagesToNumber = [...new Set(pagesToNumber)].sort((a, b) => a - b);
+      } else {
+        // Number all pages
+        pagesToNumber = Array.from({ length: totalPages }, (_, i) => i);
+      }
+
+      // Add page numbers
+      for (let i = 0; i < pagesToNumber.length; i++) {
+        const pageIndex = pagesToNumber[i];
+        const page = pages[pageIndex];
+        const { width, height } = page.getSize();
+
+        // Calculate page number text
+        let pageNumberText;
+        const currentPageNumber = startNumber + i;
+        switch (format) {
+          case 'page-of-total':
+            pageNumberText = `Page ${currentPageNumber} of ${pagesToNumber.length}`;
+            break;
+          case 'page-number':
+            pageNumberText = `Page ${currentPageNumber}`;
+            break;
+          case 'number':
+          default:
+            pageNumberText = `${currentPageNumber}`;
+            break;
+        }
+
+        // Calculate position
+        let x, y;
+        const textWidth = fontSize * pageNumberText.length * 0.5; // Approximate width
+
+        switch (position) {
+          case 'top-left':
+            x = margin;
+            y = height - margin;
+            break;
+          case 'top-center':
+            x = (width - textWidth) / 2;
+            y = height - margin;
+            break;
+          case 'top-right':
+            x = width - textWidth - margin;
+            y = height - margin;
+            break;
+          case 'bottom-left':
+            x = margin;
+            y = margin;
+            break;
+          case 'bottom-center':
+            x = (width - textWidth) / 2;
+            y = margin;
+            break;
+          case 'bottom-right':
+          default:
+            x = width - textWidth - margin;
+            y = margin;
+            break;
+        }
+
+        // Draw page number
+        page.drawText(pageNumberText, {
+          x,
+          y,
+          size: fontSize,
+          color: rgb(0, 0, 0),
+        });
+      }
+
+      const modifiedPdfBytes = await pdfDoc.save();
+      return modifiedPdfBytes;
+    } catch (error) {
+      throw new Error(`Failed to add page numbers: ${error.message}`);
+    }
+  }
+
+  /**
+   * Protect PDF with password
+   */
+  static async protectPDF(inputPath, options = {}) {
+    try {
+      const {
+        userPassword = '',
+        ownerPassword = '',
+        permissions = {
+          printing: 'highResolution',
+          modifying: false,
+          copying: false,
+          annotating: false,
+          fillingForms: false,
+          contentAccessibility: true,
+          documentAssembly: false
+        }
+      } = options;
+
+      if (!userPassword && !ownerPassword) {
+        throw new Error('At least one password (user or owner) is required');
+      }
+
+      const pdfBytes = await fs.readFile(inputPath);
+      const pdfDoc = await PDFDocument.load(pdfBytes);
+
+      // Prepare encryption options
+      const encryptOptions = {
+        userPassword: userPassword || '',
+        ownerPassword: ownerPassword || userPassword, // Use user password as owner password if not provided
+        permissions: {
+          printing: permissions.printing || 'highResolution',
+          modifying: permissions.modifying !== false,
+          copying: permissions.copying !== false,
+          annotating: permissions.annotating !== false,
+          fillingForms: permissions.fillingForms !== false,
+          contentAccessibility: permissions.contentAccessibility !== false,
+          documentAssembly: permissions.documentAssembly !== false,
+        }
+      };
+
+      const protectedPdfBytes = await pdfDoc.save(encryptOptions);
+      return protectedPdfBytes;
+    } catch (error) {
+      throw new Error(`Failed to protect PDF: ${error.message}`);
     }
   }
 }

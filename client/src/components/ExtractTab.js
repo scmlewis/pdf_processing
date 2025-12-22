@@ -4,11 +4,12 @@ import DragDropZone from './DragDropZone';
 import FilePreview from './FilePreview';
 import ProgressIndicator from './ProgressIndicator';
 import ErrorAlert from './ErrorAlert';
+import { parsePageRange, validatePageRange, pagesToIndices } from '../utils/pageRangeParser';
 import './TabStyles.css';
 
 function ExtractTab() {
   const [file, setFile] = useState(null);
-  const [pages, setPages] = useState('1,2,3');
+  const [pages, setPages] = useState('1-3,5');
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
@@ -37,15 +38,24 @@ function ExtractTab() {
       return;
     }
 
+    // Validate page range
+    const validation = validatePageRange(pages);
+    if (!validation.valid) {
+      setError(validation.error);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setProgress(0);
 
     const formData = new FormData();
     formData.append('file', file);
-    // Convert 1-based page numbers to 0-based indices for server
-    const oneBased = pages.split(',').map(p => parseInt(p.trim()));
-    const zeroBasedIndices = oneBased.map(p => p - 1);
+    
+    // Parse page range and convert to 0-based indices
+    const pageNumbers = parsePageRange(pages);
+    const zeroBasedIndices = pagesToIndices(pageNumbers);
+    
     formData.append('pageIndices', JSON.stringify(zeroBasedIndices));
     formData.append('originalFilename', file.name);
 
@@ -64,7 +74,14 @@ function ExtractTab() {
       
       // Automatically download the PDF with original filename + suffix
       const baseName = file.name.replace('.pdf', '');
-      downloadPDF(response.data, `${baseName}-extracted.pdf`);
+      const filename = `${baseName}-extracted.pdf`;
+      downloadPDF(response.data, filename);
+      
+      // Add to recent files
+      if (window.addRecentFile) {
+        window.addRecentFile(filename, 'extract', response.data.size);
+      }
+      
       window.showToast?.('Pages extracted successfully!', 'success');
     } catch (err) {
       const errMsg = err.response?.data?.error || 'Error extracting pages';
@@ -88,15 +105,15 @@ function ExtractTab() {
       {file && <FilePreview files={[file]} onRemoveFile={() => setFile(null)} />}
 
       <div className="input-group" style={{ marginTop: '20px' }}>
-        <label>Page Numbers (comma-separated, 1-based)</label>
+        <label>Page Numbers (supports ranges, 1-based)</label>
         <input
           type="text"
           value={pages}
           onChange={(e) => setPages(e.target.value)}
-          placeholder="1,2,3"
+          placeholder="1-5,8,10-12"
           className="text-input"
         />
-        <small>Example: "1,3,5" extracts pages 1, 3, and 5</small>
+        <small>Example: "1-5,8,10-12" extracts pages 1,2,3,4,5,8,10,11,12</small>
       </div>
 
       {!loading && (

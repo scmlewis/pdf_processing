@@ -15,7 +15,15 @@ function CombineTab() {
   const handleFilesSelected = (selectedFiles) => {
     const pdfFiles = Array.from(selectedFiles).filter(f => f.type === 'application/pdf');
     if (pdfFiles.length > 0) {
-      setFiles(pdfFiles);
+      // Append new files to existing ones instead of replacing
+      setFiles(prevFiles => {
+        const newFiles = [...prevFiles, ...pdfFiles];
+        // Remove duplicates based on name and size
+        const uniqueFiles = newFiles.filter((file, index, self) =>
+          index === self.findIndex(f => f.name === file.name && f.size === file.size)
+        );
+        return uniqueFiles;
+      });
       setError(null);
     } else {
       setError('Please select valid PDF files only');
@@ -62,7 +70,14 @@ function CombineTab() {
       clearInterval(progressInterval);
       setProgress(100);
       const baseName = files[0].name.replace('.pdf', '');
-      downloadPDF(response.data, `${baseName}-combined.pdf`);
+      const filename = `${baseName}-combined.pdf`;
+      downloadPDF(response.data, filename);
+      
+      // Add to recent files
+      if (window.addRecentFile) {
+        window.addRecentFile(filename, 'combine', response.data.size);
+      }
+      
       window.showToast?.('PDFs combined successfully!', 'success');
       setFiles([]);
     } catch (err) {

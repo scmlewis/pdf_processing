@@ -57,7 +57,14 @@ function CompressTab() {
       clearInterval(progressInterval);
       setProgress(100);
       const baseName = file.name.replace('.pdf', '');
-      downloadPDF(response.data, `${baseName}-compressed.pdf`);
+      const filename = `${baseName}-compressed.pdf`;
+      downloadPDF(response.data, filename);
+      
+      // Add to recent files
+      if (window.addRecentFile) {
+        window.addRecentFile(filename, 'compress', response.data.size);
+      }
+      
       window.showToast?.('PDF compressed successfully!', 'success');
     } catch (err) {
       const errMsg = err.response?.data?.error || 'Error compressing PDF';

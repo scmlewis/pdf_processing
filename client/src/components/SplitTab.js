@@ -114,6 +114,11 @@ function SplitTab() {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
+      
+      // Add to recent files
+      if (window.addRecentFile) {
+        window.addRecentFile(filename, 'split', blob.size);
+      }
     } catch (err) {
       setError('Error downloading file');
     }

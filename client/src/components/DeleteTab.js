@@ -4,6 +4,7 @@ import DragDropZone from './DragDropZone';
 import FilePreview from './FilePreview';
 import ProgressIndicator from './ProgressIndicator';
 import ErrorAlert from './ErrorAlert';
+import { parsePageRange, validatePageRange, pagesToIndices } from '../utils/pageRangeParser';
 import './TabStyles.css';
 
 function DeleteTab() {
@@ -37,15 +38,24 @@ function DeleteTab() {
       return;
     }
 
+    // Validate page range
+    const validation = validatePageRange(pages);
+    if (!validation.valid) {
+      setError(validation.error);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setProgress(0);
 
     const formData = new FormData();
     formData.append('file', file);
-    // Convert 1-based page numbers to 0-based indices for server
-    const oneBased = pages.split(',').map(p => parseInt(p.trim()));
-    const zeroBasedIndices = oneBased.map(p => p - 1);
+    
+    // Parse page range and convert to 0-based indices
+    const pageNumbers = parsePageRange(pages);
+    const zeroBasedIndices = pagesToIndices(pageNumbers);
+    
     formData.append('pageIndices', JSON.stringify(zeroBasedIndices));
     formData.append('originalFilename', file.name);
 
@@ -62,7 +72,14 @@ function DeleteTab() {
       clearInterval(progressInterval);
       setProgress(100);
       const baseName = file.name.replace('.pdf', '');
-      downloadPDF(response.data, `${baseName}-deleted.pdf`);
+      const filename = `${baseName}-deleted.pdf`;
+      downloadPDF(response.data, filename);
+      
+      // Add to recent files
+      if (window.addRecentFile) {
+        window.addRecentFile(filename, 'delete', response.data.size);
+      }
+      
       window.showToast?.('Pages deleted successfully!', 'success');
     } catch (err) {
       const errMsg = err.response?.data?.error || 'Error deleting pages';
@@ -86,15 +103,15 @@ function DeleteTab() {
       {file && <FilePreview files={[file]} onRemoveFile={() => setFile(null)} />}
 
       <div className="input-group" style={{ marginTop: '20px' }}>
-        <label>Page Numbers to Delete (comma-separated, 1-based)</label>
+        <label>Page Numbers to Delete (supports ranges, 1-based)</label>
         <input
           type="text"
           value={pages}
           onChange={(e) => setPages(e.target.value)}
-          placeholder="1,2"
+          placeholder="1-3,5"
           className="text-input"
         />
-        <small>Example: "1,3" deletes pages 1 and 3</small>
+        <small>Example: "1-3,5" deletes pages 1,2,3,5</small>
       </div>
 
       {!loading && (

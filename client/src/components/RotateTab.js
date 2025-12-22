@@ -4,6 +4,7 @@ import DragDropZone from './DragDropZone';
 import FilePreview from './FilePreview';
 import ProgressIndicator from './ProgressIndicator';
 import ErrorAlert from './ErrorAlert';
+import { parsePageRange, validatePageRange, pagesToIndices } from '../utils/pageRangeParser';
 import './TabStyles.css';
 
 function RotateTab() {
@@ -38,15 +39,24 @@ function RotateTab() {
       return;
     }
 
+    // Validate page range
+    const validation = validatePageRange(pages);
+    if (!validation.valid) {
+      setError(validation.error);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setProgress(0);
 
     const formData = new FormData();
     formData.append('file', file);
-    // Convert 1-based page numbers to 0-based indices for server
-    const oneBased = pages.split(',').map(p => parseInt(p.trim()));
-    const zeroBasedIndices = oneBased.map(p => p - 1);
+    
+    // Parse page range and convert to 0-based indices
+    const pageNumbers = parsePageRange(pages);
+    const zeroBasedIndices = pagesToIndices(pageNumbers);
+    
     formData.append('pageIndices', JSON.stringify(zeroBasedIndices));
     formData.append('angle', angle);
     formData.append('originalFilename', file.name);
@@ -64,7 +74,14 @@ function RotateTab() {
       clearInterval(progressInterval);
       setProgress(100);
       const baseName = file.name.replace('.pdf', '');
-      downloadPDF(response.data, `${baseName}-rotated.pdf`);
+      const filename = `${baseName}-rotated.pdf`;
+      downloadPDF(response.data, filename);
+      
+      // Add to recent files
+      if (window.addRecentFile) {
+        window.addRecentFile(filename, 'rotate', response.data.size);
+      }
+      
       window.showToast?.('Pages rotated successfully!', 'success');
     } catch (err) {
       const errMsg = err.response?.data?.error || 'Error rotating pages';
@@ -88,14 +105,15 @@ function RotateTab() {
       {file && <FilePreview files={[file]} onRemoveFile={() => setFile(null)} />}
 
       <div className="input-group" style={{ marginTop: '20px' }}>
-        <label>Page Numbers (comma-separated, 1-based)</label>
+        <label>Page Numbers (supports ranges, 1-based)</label>
         <input
           type="text"
           value={pages}
           onChange={(e) => setPages(e.target.value)}
-          placeholder="1,2"
+          placeholder="1-3,5"
           className="text-input"
         />
+        <small>Example: "1-3,5" rotates pages 1,2,3,5</small>
       </div>
 
       <div className="input-group">

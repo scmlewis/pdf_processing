@@ -65,7 +65,14 @@ function WatermarkTab() {
       clearInterval(progressInterval);
       setProgress(100);
       const baseName = file.name.replace('.pdf', '');
-      downloadPDF(response.data, `${baseName}-watermarked.pdf`);
+      const filename = `${baseName}-watermarked.pdf`;
+      downloadPDF(response.data, filename);
+      
+      // Add to recent files
+      if (window.addRecentFile) {
+        window.addRecentFile(filename, 'watermark', response.data.size);
+      }
+      
       window.showToast?.('Watermark added successfully!', 'success');
     } catch (err) {
       const errMsg = err.response?.data?.error || 'Error adding watermark';

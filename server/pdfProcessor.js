@@ -4,7 +4,7 @@
 
 const { PDFDocument, PDFPage, rgb, degrees } = require('pdf-lib');
 const fs = require('fs').promises;
-const { encrypt } = require('node-qpdf');
+const { spawn } = require('child_process');
 
 class PDFProcessor {
   /**
@@ -581,7 +581,7 @@ class PDFProcessor {
   }
 
   /**
-   * Protect PDF with password using node-qpdf
+   * Protect PDF with password using qpdf command directly
    */
   static async protectPDF(inputPath, options = {}) {
     try {
@@ -603,68 +603,86 @@ class PDFProcessor {
         throw new Error('At least one password (user or owner) is required');
       }
 
-      // Prepare encryption options for node-qpdf
-      const encryptOptions = {
-        input: inputPath,
-        keyLength: 256, // AES-256 encryption
-      };
-
-      // Set passwords
-      if (userPassword) {
-        encryptOptions.password = userPassword;
-      }
-      if (ownerPassword) {
-        encryptOptions.ownerPassword = ownerPassword;
-      } else if (userPassword) {
-        encryptOptions.ownerPassword = userPassword; // Use user password as owner if not provided
-      }
-
-      // Set restrictions (inverted logic - qpdf uses 'restrictions' for what to DISALLOW)
-      const restrictions = {};
+      const outputPath = inputPath.replace(/\.pdf$/i, '_encrypted.pdf');
       
-      // Printing
-      if (permissions.printing === false || permissions.printing === 'false') {
-        restrictions.print = 'none';
-      } else if (permissions.printing === 'lowResolution') {
-        restrictions.print = 'low';
+      // Build qpdf command arguments
+      const args = ['--encrypt'];
+      
+      // User password and owner password
+      args.push(userPassword || ownerPassword); // user password
+      args.push(ownerPassword || userPassword); // owner password
+      
+      // Key length (256 = AES-256)
+      args.push('256');
+      
+      // Add restrictions
+      // For 256-bit encryption, options are:
+      // --print=none|low|full
+      // --modify=none|annotate|form|assembly|all
+      // --extract=y|n
+      // --accessibility=y|n
+      
+      if (permissions.printing === false || permissions.printing === 'lowResolution') {
+        args.push('--print=' + (permissions.printing === false ? 'none' : 'low'));
       } else {
-        restrictions.print = 'full'; // highResolution
+        args.push('--print=full');
       }
-
-      // Modify
-      if (!permissions.modifying && permissions.modifying !== 'true') {
-        restrictions.modify = 'none';
+      
+      if (!permissions.modifying) {
+        args.push('--modify=none');
+      } else {
+        args.push('--modify=all');
       }
-
-      // Extract/Copy
-      if (!permissions.copying && permissions.copying !== 'true') {
-        restrictions.extract = 'n';
+      
+      if (!permissions.copying) {
+        args.push('--extract=n');
+      } else {
+        args.push('--extract=y');
       }
-
-      // Annotate
-      if (!permissions.annotating && permissions.annotating !== 'true') {
-        restrictions.annotate = 'n';
+      
+      if (!permissions.contentAccessibility) {
+        args.push('--accessibility=n');
+      } else {
+        args.push('--accessibility=y');
       }
-
-      // Form filling
-      if (!permissions.fillingForms && permissions.fillingForms !== 'true') {
-        restrictions.forms = 'n';
-      }
-
-      // Accessibility (for screen readers)
-      if (!permissions.contentAccessibility && permissions.contentAccessibility !== 'true') {
-        restrictions.accessibility = 'n';
-      }
-
-      // Document assembly
-      if (!permissions.documentAssembly && permissions.documentAssembly !== 'true') {
-        restrictions.assemble = 'n';
-      }
-
-      encryptOptions.restrictions = restrictions;
-
-      // Encrypt the PDF and return the buffer
-      const encryptedBuffer = await encrypt(encryptOptions);
+      
+      // End of encryption options
+      args.push('--');
+      
+      // Input and output files
+      args.push(inputPath);
+      args.push(outputPath);
+      
+      // Execute qpdf command
+      await new Promise((resolve, reject) => {
+        const qpdf = spawn('qpdf', args);
+        
+        let stderr = '';
+        
+        qpdf.stderr.on('data', (data) => {
+          stderr += data.toString();
+        });
+        
+        qpdf.on('close', (code) => {
+          if (code === 0 || code === 3) {
+            // Code 0 = success, Code 3 = warnings but success
+            resolve();
+          } else {
+            reject(new Error(`qpdf exited with code ${code}: ${stderr}`));
+          }
+        });
+        
+        qpdf.on('error', (err) => {
+          reject(new Error(`Failed to spawn qpdf: ${err.message}`));
+        });
+      });
+      
+      // Read the encrypted file
+      const encryptedBuffer = await fs.readFile(outputPath);
+      
+      // Clean up temp file
+      await fs.unlink(outputPath).catch(() => {});
+      
       return encryptedBuffer;
       
     } catch (error) {

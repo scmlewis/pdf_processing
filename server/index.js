@@ -13,6 +13,15 @@ const pdfRoutes = require('./routes/pdf');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('[Startup] Created uploads directory:', uploadsDir);
+} else {
+  console.log('[Startup] Uploads directory exists:', uploadsDir);
+}
+
 // Try multiple possible build locations for different deployment environments
 const possibleBuildPaths = [
   path.join(__dirname, '../client/build'),        // Local & after copy-build

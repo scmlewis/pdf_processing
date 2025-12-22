@@ -1,27 +1,14 @@
-# Use Node.js official image
-FROM node:18
+# Use Debian-based Node image for better package support
+FROM node:18-bullseye
 
-# Install dependencies for qpdf
+# Update and install qpdf
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    wget \
-    ca-certificates \
-    libjpeg62-turbo \
-    zlib1g \
-    libgnutls30 && \
+    apt-get install -y qpdf && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Download and install qpdf from GitHub releases
-RUN cd /tmp && \
-    wget https://github.com/qpdf/qpdf/releases/download/v11.9.0/qpdf-11.9.0-x86_64.AppImage && \
-    chmod +x qpdf-11.9.0-x86_64.AppImage && \
-    ./qpdf-11.9.0-x86_64.AppImage --appimage-extract && \
-    mv squashfs-root /opt/qpdf && \
-    ln -s /opt/qpdf/usr/bin/qpdf /usr/local/bin/qpdf && \
-    rm qpdf-11.9.0-x86_64.AppImage
-
-# Verify qpdf installation
-RUN qpdf --version
+# Test qpdf is installed
+RUN qpdf --version && which qpdf
 
 # Set working directory
 WORKDIR /app

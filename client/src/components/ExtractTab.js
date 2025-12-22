@@ -2,22 +2,54 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import DragDropZone from './DragDropZone';
 import FilePreview from './FilePreview';
+import PageThumbnailGrid from './PageThumbnailGrid';
+import PageRangePresets from './PageRangePresets';
+import PDFPreviewModal from './PDFPreviewModal';
 import ProgressIndicator from './ProgressIndicator';
 import ErrorAlert from './ErrorAlert';
 import { parsePageRange, validatePageRange, pagesToIndices } from '../utils/pageRangeParser';
+import { savePDF } from '../utils/pdfStorage';
 import './TabStyles.css';
 
 function ExtractTab() {
   const [file, setFile] = useState(null);
-  const [pages, setPages] = useState('1-3,5');
+  const [pages, setPages] = useState('1');
+  const [selectedPages, setSelectedPages] = useState([]);
+  const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
+  const [previewBlob, setPreviewBlob] = useState(null);
+  const [previewFilename, setPreviewFilename] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
 
   const handleFilesSelected = (selectedFiles) => {
     if (selectedFiles.length > 0) {
       setFile(selectedFiles[0]);
+      setPages('1');
+      setSelectedPages([]);
       setError(null);
+    }
+  };
+
+  // Sync text input to thumbnail selection
+  const handlePagesChange = (value) => {
+    setPages(value);
+    const validation = validatePageRange(value);
+    if (validation.valid) {
+      const pageNumbers = parsePageRange(value);
+      setSelectedPages(pageNumbers);
+    }
+  };
+
+  // Sync thumbnail selection to text input
+  const handlePageSelect = (pages) => {
+    setSelectedPages(pages);
+    if (pages.length > 0) {
+      const sorted = [...pages].sort((a, b) => a - b);
+      setPages(sorted.join(','));
+    } else {
+      setPages('');
     }
   };
 
@@ -38,10 +70,8 @@ function ExtractTab() {
       return;
     }
 
-    // Validate page range
-    const validation = validatePageRange(pages);
-    if (!validation.valid) {
-      setError(validation.error);
+    if (selectedPages.length === 0) {
+      setError('Please select at least one page to extract');
       return;
     }
 
@@ -52,9 +82,8 @@ function ExtractTab() {
     const formData = new FormData();
     formData.append('file', file);
     
-    // Parse page range and convert to 0-based indices
-    const pageNumbers = parsePageRange(pages);
-    const zeroBasedIndices = pagesToIndices(pageNumbers);
+    // Convert page numbers to 0-based indices
+    const zeroBasedIndices = pagesToIndices(selectedPages);
     
     formData.append('pageIndices', JSON.stringify(zeroBasedIndices));
     formData.append('originalFilename', file.name);
@@ -72,17 +101,22 @@ function ExtractTab() {
       clearInterval(progressInterval);
       setProgress(100);
       
-      // Automatically download the PDF with original filename + suffix
+      // Store blob and show preview instead of downloading immediately
       const baseName = file.name.replace('.pdf', '');
       const filename = `${baseName}-extracted.pdf`;
-      downloadPDF(response.data, filename);
+      setPreviewBlob(response.data);
+      setPreviewFilename(filename);
+      setShowPreview(true);
+      
+      // Save to IndexedDB for re-download
+      await savePDF(filename, response.data, 'extract');
       
       // Add to recent files
       if (window.addRecentFile) {
         window.addRecentFile(filename, 'extract', response.data.size);
       }
       
-      window.showToast?.('Pages extracted successfully!', 'success');
+      window.showToast?.('Pages extracted successfully! Preview your PDF.', 'success');
     } catch (err) {
       const errMsg = err.response?.data?.error || 'Error extracting pages';
       window.showToast?.(errMsg, 'error');
@@ -104,23 +138,54 @@ function ExtractTab() {
       <DragDropZone onFilesSelected={handleFilesSelected} multiple={false} label="Drag & drop a PDF to extract pages" />
       {file && <FilePreview files={[file]} onRemoveFile={() => setFile(null)} />}
 
-      <div className="input-group" style={{ marginTop: '20px' }}>
-        <label>Page Numbers (supports ranges, 1-based)</label>
-        <input
-          type="text"
-          value={pages}
-          onChange={(e) => setPages(e.target.value)}
-          placeholder="1-5,8,10-12"
-          className="text-input"
-        />
-        <small>Example: "1-5,8,10-12" extracts pages 1,2,3,4,5,8,10,11,12</small>
-      </div>
+      {file && (
+        <>
+          <div className="input-group" style={{ marginTop: '20px' }}>
+            <label>Page Numbers (supports ranges, 1-based)</label>
+            <input
+              type="text"
+              value={pages}
+              onChange={(e) => handlePagesChange(e.target.value)}
+              placeholder="1-3,5"
+              className="text-input"
+            />
+            <small>Example: "1-3,5" extracts pages 1,2,3,5. Or use thumbnails below to select pages visually.</small>
+          </div>
+
+          <PageRangePresets
+            totalPages={totalPages}
+            onSelectPreset={handlePageSelect}
+            disabled={loading}
+          />
+          <PageThumbnailGrid
+            file={file}
+            selectedPages={selectedPages}
+            onPageSelect={handlePageSelect}
+            onPagesLoad={(count) => setTotalPages(count)}
+            selectionMode="multiple"
+            showSelectAll={true}
+            disabled={loading}
+          />
+        </>
+      )}
 
       {!loading && (
-        <button onClick={handleExtract} className="action-button" disabled={!file} style={{ marginTop: '20px' }}>
-          Extract Pages
+        <button 
+          onClick={handleExtract} 
+          className="action-button" 
+          disabled={!file || selectedPages.length === 0} 
+          style={{ marginTop: '20px' }}
+        >
+          Extract {selectedPages.length > 0 ? `${selectedPages.length} ${selectedPages.length === 1 ? 'Page' : 'Pages'}` : 'Pages'}
         </button>
       )}
+
+      <PDFPreviewModal
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        pdfBlob={previewBlob}
+        filename={previewFilename}
+      />
     </div>
   );
 }

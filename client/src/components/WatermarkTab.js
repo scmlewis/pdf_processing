@@ -95,51 +95,55 @@ function WatermarkTab() {
       <DragDropZone onFilesSelected={handleFilesSelected} multiple={false} label="Drag & drop a PDF to watermark" />
       {file && <FilePreview files={[file]} onRemoveFile={() => setFile(null)} />}
 
-      <div className="input-group" style={{ marginTop: '20px' }}>
-        <label>Watermark Text</label>
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="CONFIDENTIAL"
-          className="text-input"
-        />
-      </div>
+      {file && (
+        <>
+          <div className="input-group" style={{ marginTop: '20px' }}>
+            <label>Watermark Text</label>
+            <input
+              type="text"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="CONFIDENTIAL"
+              className="text-input"
+            />
+          </div>
 
-      <div className="input-group">
-        <label>Font Size: {fontSize}</label>
-        <input
-          type="range"
-          min="20"
-          max="100"
-          value={fontSize}
-          onChange={(e) => setFontSize(parseInt(e.target.value))}
-          className="slider"
-        />
-      </div>
+          <div className="input-group">
+            <label>Font Size: {fontSize}</label>
+            <input
+              type="range"
+              min="20"
+              max="100"
+              value={fontSize}
+              onChange={(e) => setFontSize(parseInt(e.target.value))}
+              className="slider"
+            />
+          </div>
 
-      <div className="input-group">
-        <label>Opacity: {opacity.toFixed(2)}</label>
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.1"
-          value={opacity}
-          onChange={(e) => setOpacity(parseFloat(e.target.value))}
-          className="slider"
-        />
-      </div>
+          <div className="input-group">
+            <label>Opacity: {opacity.toFixed(2)}</label>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+              value={opacity}
+              onChange={(e) => setOpacity(parseFloat(e.target.value))}
+              className="slider"
+            />
+          </div>
 
-      <div className="input-group">
-        <label>Rotation Angle (degrees)</label>
-        <input
-          type="number"
-          value={angle}
-          onChange={(e) => setAngle(parseInt(e.target.value))}
-          className="text-input"
-        />
-      </div>
+          <div className="input-group">
+            <label>Rotation Angle (degrees)</label>
+            <input
+              type="number"
+              value={angle}
+              onChange={(e) => setAngle(parseInt(e.target.value))}
+              className="text-input"
+            />
+          </div>
+        </>
+      )}
 
       {!loading && (
         <button onClick={handleWatermark} className="action-button" disabled={!file} style={{ marginTop: '20px' }}>

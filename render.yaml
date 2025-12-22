@@ -1,9 +1,9 @@
 ﻿services:
   - type: web
     name: pdf-processor
-    env: node
-    buildCommand: apt-get update && apt-get install -y qpdf && npm install && cd client && npm install && npm run build && cd ..
-    startCommand: node server/index.js
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     envVars:
-      - key: NODE_VERSION
-        value: 18.x
+      - key: NODE_ENV
+        value: production

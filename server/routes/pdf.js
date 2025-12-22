@@ -152,17 +152,28 @@ router.post('/rotate', upload.single('file'), async (req, res) => {
     const pageIndices = JSON.parse(req.body.pageIndices || '[]');
     const angle = parseInt(req.body.angle || 90);
 
+    console.log('[rotate] File:', req.file.path);
+    console.log('[rotate] Page indices:', pageIndices);
+    console.log('[rotate] Angle:', angle);
+
     if (pageIndices.length === 0) {
       return res.status(400).json({ error: 'No page indices specified' });
     }
 
     const pdfBytes = await PDFProcessor.rotatePagesTobytes(req.file.path, pageIndices, angle);
     
+    // Clean up uploaded file
+    await fs.unlink(req.file.path).catch(() => {});
+    
     const outputFilename = getOutputFilename(req.body.originalFilename, 'rotated');
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${outputFilename}"`);
     res.send(Buffer.from(pdfBytes));
   } catch (error) {
+    console.error('[rotate] Error:', error);
+    if (req.file) {
+      await fs.unlink(req.file.path).catch(() => {});
+    }
     res.status(500).json({ error: error.message });
   }
 });

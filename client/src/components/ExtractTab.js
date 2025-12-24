@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import DragDropZone from './DragDropZone';
 import FilePreview from './FilePreview';
@@ -11,7 +11,7 @@ import { parsePageRange, validatePageRange, pagesToIndices } from '../utils/page
 import { savePDF } from '../utils/pdfStorage';
 import './TabStyles.css';
 
-function ExtractTab() {
+function ExtractTab({ initialFiles }) {
   const [file, setFile] = useState(null);
   const [pages, setPages] = useState('1');
   const [selectedPages, setSelectedPages] = useState([]);
@@ -22,6 +22,23 @@ function ExtractTab() {
   const [previewBlob, setPreviewBlob] = useState(null);
   const [previewFilename, setPreviewFilename] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+
+  // Handle initial files passed from global drag-drop
+  useEffect(() => {
+    if (initialFiles && initialFiles.length > 0) {
+      const pdfFile = initialFiles.find(f => 
+        f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
+      );
+      if (pdfFile) {
+        setFile(pdfFile);
+        setPages('1');
+        setSelectedPages([]);
+        if (window.clearDroppedFiles) {
+          window.clearDroppedFiles();
+        }
+      }
+    }
+  }, [initialFiles]);
 
   const handleFilesSelected = (selectedFiles) => {
     if (selectedFiles.length > 0) {

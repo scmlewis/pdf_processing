@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import DragDropZone from './DragDropZone';
 import FilePreview from './FilePreview';
@@ -6,11 +6,27 @@ import ProgressIndicator from './ProgressIndicator';
 import ErrorAlert from './ErrorAlert';
 import './TabStyles.css';
 
-function CombineTab() {
+function CombineTab({ initialFiles }) {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
+
+  // Handle initial files passed from global drag-drop
+  useEffect(() => {
+    if (initialFiles && initialFiles.length > 0) {
+      const pdfFiles = initialFiles.filter(f => 
+        f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
+      );
+      if (pdfFiles.length > 0) {
+        setFiles(pdfFiles);
+        // Clear the dropped files from global state
+        if (window.clearDroppedFiles) {
+          window.clearDroppedFiles();
+        }
+      }
+    }
+  }, [initialFiles]);
 
   const handleFilesSelected = (selectedFiles) => {
     const pdfFiles = Array.from(selectedFiles).filter(f => f.type === 'application/pdf');

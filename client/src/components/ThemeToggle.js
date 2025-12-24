@@ -2,18 +2,15 @@ import React, { useState, useEffect } from 'react';
 import './ThemeToggle.css';
 
 const ThemeToggle = () => {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
-    // Check system preference first (auto dark mode detection)
-    const prefersColorScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    // Check saved preference or default to dark for professional look
     const savedTheme = localStorage.getItem('theme');
     
-    let theme = 'light';
+    let theme = 'dark'; // Default to dark theme
     if (savedTheme) {
-      theme = savedTheme; // Use saved preference
-    } else if (prefersColorScheme.matches) {
-      theme = 'dark'; // Auto-detect system preference
+      theme = savedTheme; // Use saved preference if exists
     }
     
     setIsDark(theme === 'dark');

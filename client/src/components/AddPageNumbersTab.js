@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import DragDropZone from './DragDropZone';
 import FilePreview from './FilePreview';
 import ProgressIndicator from './ProgressIndicator';
 import './TabStyles.css';
 
-function AddPageNumbersTab() {
+function AddPageNumbersTab({ initialFiles }) {
   const [file, setFile] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [position, setPosition] = useState('bottom-right');
@@ -14,6 +14,21 @@ function AddPageNumbersTab() {
   const [pageRange, setPageRange] = useState('');
   const [fontSize, setFontSize] = useState(12);
   const [margin, setMargin] = useState(20);
+
+  // Handle initial files passed from global drag-drop
+  useEffect(() => {
+    if (initialFiles && initialFiles.length > 0) {
+      const pdfFile = initialFiles.find(f => 
+        f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
+      );
+      if (pdfFile) {
+        setFile(pdfFile);
+        if (window.clearDroppedFiles) {
+          window.clearDroppedFiles();
+        }
+      }
+    }
+  }, [initialFiles]);
 
   const handleFileSelect = (selectedFiles) => {
     if (selectedFiles.length > 0) {

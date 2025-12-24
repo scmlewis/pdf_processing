@@ -10,8 +10,9 @@ import './TabStyles.css';
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
-function ReorderTab() {
+function ReorderTab({ initialFiles }) {
   const [file, setFile] = useState(null);
+  const [initialFilesProcessed, setInitialFilesProcessed] = useState(false);
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingInfo, setLoadingInfo] = useState(false);
@@ -20,6 +21,25 @@ function ReorderTab() {
   const [manualOrder, setManualOrder] = useState('');
   const [useManual, setUseManual] = useState(false);
   const droppableRef = useRef(null);
+
+  // Handle initial files passed from global drag-drop
+  useEffect(() => {
+    if (initialFiles && initialFiles.length > 0 && !initialFilesProcessed) {
+      const pdfFile = initialFiles.find(f => 
+        f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
+      );
+      if (pdfFile) {
+        setFile(pdfFile);
+        setError(null);
+        setPages([]);
+        loadPDFInfo(pdfFile);
+        setInitialFilesProcessed(true);
+        if (window.clearDroppedFiles) {
+          window.clearDroppedFiles();
+        }
+      }
+    }
+  }, [initialFiles, initialFilesProcessed]);
 
   const handleFilesSelected = async (selectedFiles) => {
     if (selectedFiles.length > 0) {

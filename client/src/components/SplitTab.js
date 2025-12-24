@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import DragDropZone from './DragDropZone';
 import FilePreview from './FilePreview';
@@ -6,7 +6,7 @@ import ProgressIndicator from './ProgressIndicator';
 import ErrorAlert from './ErrorAlert';
 import './TabStyles.css';
 
-function SplitTab() {
+function SplitTab({ initialFiles }) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -16,6 +16,22 @@ function SplitTab() {
   const [pagesPerFile, setPagesPerFile] = useState('1');
   const [pageRange, setPageRange] = useState('1-5');
   const [pageInfo, setPageInfo] = useState(null);
+
+  // Handle initial files passed from global drag-drop
+  useEffect(() => {
+    if (initialFiles && initialFiles.length > 0) {
+      const pdfFile = initialFiles.find(f => 
+        f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
+      );
+      if (pdfFile) {
+        setFile(pdfFile);
+        detectPageCount(pdfFile);
+        if (window.clearDroppedFiles) {
+          window.clearDroppedFiles();
+        }
+      }
+    }
+  }, [initialFiles]);
 
   const handleFilesSelected = (selectedFiles) => {
     if (selectedFiles.length > 0) {

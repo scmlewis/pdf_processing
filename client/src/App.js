@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import ThemeToggle from './components/ThemeToggle';
 import UserGuide from './components/UserGuide';
 import SettingsPanel from './components/SettingsPanel';
 import Toast from './components/Toast';
@@ -26,6 +25,11 @@ function App() {
   const [droppedFiles, setDroppedFiles] = useState(null);
   const [showToolPicker, setShowToolPicker] = useState(false);
   const [pendingFiles, setPendingFiles] = useState(null);
+
+  // Always apply dark theme on mount
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }, []);
 
   const tabs = [
     { id: 'combine', label: '📎 Combine', icon: '📎', title: 'Combine PDF', component: CombineTab, shortcut: '1' },
@@ -109,12 +113,6 @@ function App() {
         handleTabClick(tabs[9].id);
       }
 
-      // Ctrl+Space to toggle theme
-      if (e.code === 'Space' && e.ctrlKey) {
-        e.preventDefault();
-        document.querySelector('.theme-toggle')?.click();
-      }
-
       // ? to open help
       if (e.key === '?') {
         e.preventDefault();
@@ -149,7 +147,6 @@ function App() {
   if (!activeTab) {
     return (
       <div className="app">
-        <ThemeToggle />
         <UserGuide />
         <SettingsPanel />
         {toast && <Toast message={toast.message} type={toast.type} />}
@@ -170,7 +167,6 @@ function App() {
 
   return (
     <div className="app">
-      <ThemeToggle />
       <UserGuide />
       <SettingsPanel />
       <RecentFiles />

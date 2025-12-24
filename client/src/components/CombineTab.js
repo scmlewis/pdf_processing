@@ -27,6 +27,8 @@ function CombineTab({ initialFiles }) {
   const [selectedPages2, setSelectedPages2] = useState([]);
   const [loadingThumbnails1, setLoadingThumbnails1] = useState(false);
   const [loadingThumbnails2, setLoadingThumbnails2] = useState(false);
+  const [pageRange1, setPageRange1] = useState('');
+  const [pageRange2, setPageRange2] = useState('');
   
   // Common state
   const [loading, setLoading] = useState(false);
@@ -167,6 +169,45 @@ function CombineTab({ initialFiles }) {
     }
   };
 
+  // Parse page range string like "1-5, 8, 10-15" into array of page numbers
+  const parsePageRange = (rangeString, maxPage) => {
+    if (!rangeString.trim()) return [];
+    
+    const pages = new Set();
+    const parts = rangeString.split(',');
+    
+    for (const part of parts) {
+      const trimmed = part.trim();
+      if (!trimmed) continue;
+      
+      if (trimmed.includes('-')) {
+        const [start, end] = trimmed.split('-').map(s => parseInt(s.trim(), 10));
+        if (!isNaN(start) && !isNaN(end)) {
+          for (let i = Math.max(1, start); i <= Math.min(maxPage, end); i++) {
+            pages.add(i);
+          }
+        }
+      } else {
+        const num = parseInt(trimmed, 10);
+        if (!isNaN(num) && num >= 1 && num <= maxPage) {
+          pages.add(num);
+        }
+      }
+    }
+    
+    return Array.from(pages).sort((a, b) => a - b);
+  };
+
+  const applyPageRange = (rangeString, thumbnails, setSelectedPages, setRangeInput) => {
+    const maxPage = thumbnails.length;
+    const selectedPages = parsePageRange(rangeString, maxPage);
+    if (selectedPages.length > 0) {
+      setSelectedPages(selectedPages);
+    } else if (rangeString.trim()) {
+      setError('Invalid page range. Use format like: 1-5, 8, 10-15');
+    }
+  };
+
   const downloadPDF = (blob, filename) => {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -286,7 +327,7 @@ function CombineTab({ initialFiles }) {
     }
   };
 
-  const renderThumbnailGrid = (thumbnails, selectedPages, setSelectedPages, loading, file, onRemove) => {
+  const renderThumbnailGrid = (thumbnails, selectedPages, setSelectedPages, loading, file, onRemove, pageRange, setPageRange) => {
     if (loading) {
       return (
         <div className="selective-loading">
@@ -325,6 +366,32 @@ function CombineTab({ initialFiles }) {
             </button>
           </div>
         </div>
+        
+        {/* Page Range Input */}
+        <div className="page-range-container">
+          <div className="page-range-row">
+            <input
+              type="text"
+              className="page-range-input"
+              placeholder="e.g., 1-5, 8, 10-15"
+              value={pageRange}
+              onChange={(e) => setPageRange(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  applyPageRange(pageRange, thumbnails, setSelectedPages);
+                }
+              }}
+            />
+            <button
+              className="apply-range-btn"
+              onClick={() => applyPageRange(pageRange, thumbnails, setSelectedPages)}
+            >
+              Apply
+            </button>
+          </div>
+          <p className="page-range-hint">Enter page numbers or ranges (1-{thumbnails.length})</p>
+        </div>
+
         <div className="selective-thumbnails">
           {thumbnails.map((thumb) => (
             <div
@@ -433,7 +500,9 @@ function CombineTab({ initialFiles }) {
                   setSelectedPages1, 
                   loadingThumbnails1,
                   file1,
-                  () => setFile1(null)
+                  () => setFile1(null),
+                  pageRange1,
+                  setPageRange1
                 )
               )}
             </div>
@@ -457,7 +526,9 @@ function CombineTab({ initialFiles }) {
                   setSelectedPages2, 
                   loadingThumbnails2,
                   file2,
-                  () => setFile2(null)
+                  () => setFile2(null),
+                  pageRange2,
+                  setPageRange2
                 )
               )}
             </div>

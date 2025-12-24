@@ -265,12 +265,24 @@
 
 .selective-thumbnails {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
   padding: 16px;
   overflow-y: auto;
-  max-height: 400px;
+  max-height: 450px;
   flex: 1;
+}
+
+@media (max-width: 1200px) {
+  .selective-thumbnails {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .selective-thumbnails {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
 
 .selective-thumbnail {
@@ -281,7 +293,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   border: 2px solid transparent;
-  aspect-ratio: 0.7;
+  padding-bottom: 130%; /* Force consistent aspect ratio */
 }
 
 .selective-thumbnail:hover {
@@ -295,9 +307,13 @@
 }
 
 .selective-thumbnail img {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: white;
 }
 
 .thumbnail-check {
@@ -342,4 +358,61 @@
 
 .combine-tab .primary-action .btn-icon {
   margin-right: 8px;
+}
+
+/* Page Range Input */
+.page-range-container {
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--border-color, #334155);
+}
+
+.page-range-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-range-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--surface-darker, #0f172a);
+  border: 1px solid var(--border-color, #334155);
+  border-radius: 6px;
+  color: var(--text-primary, #f1f5f9);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.page-range-input:focus {
+  outline: none;
+  border-color: var(--accent-color, #10b981);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15);
+}
+
+.page-range-input::placeholder {
+  color: var(--text-secondary, #64748b);
+}
+
+.apply-range-btn {
+  padding: 8px 14px;
+  background: var(--accent-color, #10b981);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.apply-range-btn:hover {
+  background: var(--accent-hover, #059669);
+}
+
+.page-range-hint {
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+  margin-top: 6px;
 }

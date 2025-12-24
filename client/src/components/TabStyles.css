@@ -1,14 +1,16 @@
 /* Enhanced Dark Theme Variables */
 :root {
-  --surface-dark: #1e293b;
-  --surface-darker: #0f172a;
+  --surface-dark: rgba(30, 41, 59, 0.7);
+  --surface-darker: rgba(15, 23, 42, 0.8);
   --accent-color: #10b981;
   --accent-hover: #059669;
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
-  --border-subtle: #334155;
+  --border-subtle: rgba(51, 65, 85, 0.5);
   --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   --glow-accent: 0 0 20px rgba(16, 185, 129, 0.15);
+  --glass-bg: rgba(17, 24, 39, 0.6);
+  --glass-border: rgba(75, 85, 99, 0.3);
 }
 
 .tab-content {
@@ -197,11 +199,14 @@
 }
 
 .file-list {
-  background: var(--surface-dark, #1e293b);
+  background: var(--glass-bg, rgba(17, 24, 39, 0.6));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: 16px;
   border-radius: 10px;
   margin-bottom: 20px;
   border-left: 3px solid var(--accent-color, #10b981);
+  border: 1px solid var(--glass-border, rgba(75, 85, 99, 0.3));
   transition: all 0.3s ease;
 }
 

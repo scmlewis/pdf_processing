@@ -30,16 +30,16 @@
   --danger-dark: #dc2626;
   --danger-bg: #401e1e;
   --success-color: #10b981;
-  --bg-primary: #0f0f0f;
-  --bg-secondary: #1a1a1a;
-  --bg-tertiary: #242424;
-  --bg-hover: #2d2d2d;
+  --bg-primary: transparent;
+  --bg-secondary: rgba(17, 24, 39, 0.7);
+  --bg-tertiary: rgba(31, 41, 55, 0.6);
+  --bg-hover: rgba(55, 65, 81, 0.5);
   --bg-drag: rgba(16, 185, 129, 0.1);
   --text-color: #ffffff;
   --text-primary: #ffffff;
   --text-secondary: #a0aec0;
   --text-muted: #6b7280;
-  --border-color: #2d2d2d;
+  --border-color: rgba(55, 65, 81, 0.5);
   --accent-primary: #10b981;
 }
 
@@ -50,13 +50,13 @@
   flex-direction: column;
   align-items: stretch;
   padding: 0;
-  background-color: var(--bg-primary);
+  background: transparent;
   transition: background-color 0.3s ease;
   position: relative;
 }
 
 .container {
-  background: var(--bg-primary);
+  background: transparent;
   border-radius: 0;
   box-shadow: none;
   max-width: 1200px;

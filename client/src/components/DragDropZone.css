@@ -1,11 +1,13 @@
 .drag-drop-zone {
-  border: 2px dashed var(--border-subtle, #334155);
+  border: 2px dashed rgba(75, 85, 99, 0.5);
   border-radius: 12px;
   padding: 48px 24px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  background-color: var(--surface-dark, #1e293b);
+  background: rgba(17, 24, 39, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   user-select: none;
   position: relative;
   overflow: hidden;

@@ -3,10 +3,7 @@
 .home-page {
   min-height: 100vh;
   padding: 2rem;
-  background: linear-gradient(180deg, 
-    var(--bg-primary) 0%, 
-    var(--bg-secondary) 100%
-  );
+  background: transparent;
   position: relative;
 }
 
@@ -47,11 +44,14 @@
 .drop-overlay-content {
   text-align: center;
   padding: 3rem;
-  background: var(--bg-secondary);
+  background: rgba(17, 24, 39, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 3px dashed var(--accent-primary);
   border-radius: 24px;
   max-width: 400px;
   animation: dropBounce 0.3s ease;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 @keyframes dropBounce {
@@ -153,8 +153,10 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: rgba(31, 41, 55, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(75, 85, 99, 0.4);
   border-radius: 100px;
   font-size: 0.875rem;
   color: var(--text-secondary);
@@ -206,8 +208,10 @@
   align-items: flex-start;
   gap: 1rem;
   padding: 1.25rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(75, 85, 99, 0.3);
   border-radius: 16px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

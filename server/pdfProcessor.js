@@ -29,6 +29,52 @@ class PDFProcessor {
   }
 
   /**
+   * Selectively combine pages from two PDFs - returns bytes
+   * @param {string} inputPath1 - Path to first PDF
+   * @param {string} inputPath2 - Path to second PDF
+   * @param {number[]} pages1 - Page numbers to include from first PDF (1-based)
+   * @param {number[]} pages2 - Page numbers to include from second PDF (1-based)
+   */
+  static async selectiveCombinePDFs(inputPath1, inputPath2, pages1, pages2) {
+    try {
+      const mergedPdf = await PDFDocument.create();
+
+      // Load first PDF and add selected pages
+      if (pages1.length > 0) {
+        const pdfBytes1 = await fs.readFile(inputPath1);
+        const pdf1 = await PDFDocument.load(pdfBytes1);
+        // Convert 1-based page numbers to 0-based indices
+        const indices1 = pages1.map(p => p - 1).filter(i => i >= 0 && i < pdf1.getPageCount());
+        if (indices1.length > 0) {
+          const copiedPages1 = await mergedPdf.copyPages(pdf1, indices1);
+          copiedPages1.forEach(page => mergedPdf.addPage(page));
+        }
+      }
+
+      // Load second PDF and add selected pages
+      if (pages2.length > 0) {
+        const pdfBytes2 = await fs.readFile(inputPath2);
+        const pdf2 = await PDFDocument.load(pdfBytes2);
+        // Convert 1-based page numbers to 0-based indices
+        const indices2 = pages2.map(p => p - 1).filter(i => i >= 0 && i < pdf2.getPageCount());
+        if (indices2.length > 0) {
+          const copiedPages2 = await mergedPdf.copyPages(pdf2, indices2);
+          copiedPages2.forEach(page => mergedPdf.addPage(page));
+        }
+      }
+
+      if (mergedPdf.getPageCount() === 0) {
+        throw new Error('No valid pages selected for merging');
+      }
+
+      const pdfBytes = await mergedPdf.save();
+      return pdfBytes;
+    } catch (error) {
+      throw new Error(`Failed to selectively combine PDFs: ${error.message}`);
+    }
+  }
+
+  /**
    * Extract specific pages from a PDF
    */
   static async extractPages(inputPath, outputPath, pageIndices) {

@@ -67,7 +67,7 @@ const handleMulterError = (err, req, res, next) => {
 
 /**
  * POST /api/pdf/combine
- * Combine multiple PDFs
+ * Combine multiple PDFs (supports batch and selective modes)
  */
 router.post('/combine', upload.array('files', 50), handleMulterError, async (req, res) => {
   try {
@@ -75,10 +75,21 @@ router.post('/combine', upload.array('files', 50), handleMulterError, async (req
       return res.status(400).json({ error: 'Please upload at least 2 PDF files (maximum 50 files per request)' });
     }
 
+    const mode = req.body.mode || 'batch';
     const inputPaths = req.files.map(f => f.path);
-    const pdfBytes = await PDFProcessor.combinePDFsToBytes(inputPaths);
+    let pdfBytes;
+
+    if (mode === 'selective' && req.files.length === 2) {
+      // Selective merge mode - merge specific pages from two PDFs
+      const pages1 = JSON.parse(req.body.pages1 || '[]');
+      const pages2 = JSON.parse(req.body.pages2 || '[]');
+      pdfBytes = await PDFProcessor.selectiveCombinePDFs(inputPaths[0], inputPaths[1], pages1, pages2);
+    } else {
+      // Batch mode - combine all PDFs in order
+      pdfBytes = await PDFProcessor.combinePDFsToBytes(inputPaths);
+    }
     
-    const outputFilename = getOutputFilename(req.body.originalFilename, 'combined');
+    const outputFilename = getOutputFilename(req.body.originalFilename, mode === 'selective' ? 'merged' : 'combined');
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${outputFilename}"`);
     res.send(Buffer.from(pdfBytes));

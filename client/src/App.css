@@ -1,24 +1,38 @@
-/* Theme Variables */
+/* Theme Variables - Professional Productivity Tool */
 :root {
-  --primary-color: #667eea;
-  --primary-dark: #5568d3;
-  --primary-hover: #5568d3;
-  --primary-light: rgba(102, 126, 234, 0.1);
-  --danger-color: #f44336;
-  --danger-dark: #da190b;
-  --danger-bg: #ffebee;
-  --success-color: #4CAF50;
-  --bg-primary: #ffffff;
-  --bg-secondary: #f9f9f9;
-  --bg-tertiary: #f0f0f0;
-  --bg-hover: #f5f5f5;
-  --bg-drag: rgba(102, 126, 234, 0.1);
-  --text-color: #333333;
-  --text-primary: #333333;
-  --text-secondary: #666666;
-  --text-muted: #888888;
-  --border-color: #dddddd;
+  /* Primary - Emerald Green for productivity */
+  --primary-color: #10b981;
+  --primary-dark: #059669;
+  --primary-hover: #34d399;
+  --primary-light: rgba(16, 185, 129, 0.15);
+  
+  /* Danger */
+  --danger-color: #ef4444;
+  --danger-dark: #dc2626;
+  --danger-bg: #401e1e;
+  
+  /* Success */
+  --success-color: #10b981;
+  
+  /* Backgrounds - Dark theme (professional) */
+  --bg-primary: rgba(15, 23, 42, 0.7);
+  --bg-secondary: rgba(17, 24, 39, 0.7);
+  --bg-tertiary: rgba(31, 41, 55, 0.6);
+  --bg-hover: rgba(55, 65, 81, 0.5);
+  --bg-drag: rgba(16, 185, 129, 0.1);
+  
+  /* Text colors - High contrast */
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  
+  /* Borders */
+  --border-color: rgba(71, 85, 105, 0.3);
+  --border-hover: rgba(16, 185, 129, 0.5);
+  
+  /* Accents */
   --accent-primary: #10b981;
+  --accent-secondary: #3b82f6;
 }
 
 [data-theme="dark"] {
@@ -30,16 +44,15 @@
   --danger-dark: #dc2626;
   --danger-bg: #401e1e;
   --success-color: #10b981;
-  --bg-primary: transparent;
+  --bg-primary: rgba(15, 23, 42, 0.7);
   --bg-secondary: rgba(17, 24, 39, 0.7);
   --bg-tertiary: rgba(31, 41, 55, 0.6);
   --bg-hover: rgba(55, 65, 81, 0.5);
   --bg-drag: rgba(16, 185, 129, 0.1);
-  --text-color: #ffffff;
-  --text-primary: #ffffff;
-  --text-secondary: #a0aec0;
-  --text-muted: #6b7280;
-  --border-color: rgba(55, 65, 81, 0.5);
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-color: rgba(71, 85, 105, 0.3);
   --accent-primary: #10b981;
 }
 
@@ -79,79 +92,36 @@
 }
 
 .header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #00d4ff 50%, #00ff88 75%, #764ba2 100%);
-  background-size: 200% 200%;
-  animation: gradientShift 8s ease infinite;
-  color: white;
-  padding: 40px 20px;
+  background: var(--bg-secondary);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 32px 20px;
   text-align: center;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
   flex-shrink: 0;
   position: relative;
-  overflow: hidden;
-}
-
-.header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  pointer-events: none;
-}
-
-.header::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 300px;
-  height: 300px;
-  background: rgba(0, 212, 255, 0.2);
-  border-radius: 50%;
-  filter: blur(60px);
-  pointer-events: none;
-}
-
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
 }
 
 .header h1 {
   font-size: 2.5em;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   position: relative;
   z-index: 1;
   font-weight: 700;
-  text-shadow: 
-    0 2px 4px rgba(0, 0, 0, 0.2),
-    0 4px 8px rgba(0, 0, 0, 0.15),
-    0 8px 16px rgba(0, 0, 0, 0.1),
-    2px 2px 4px rgba(0, 0, 0, 0.15);
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
 }
 
 .header p {
   font-size: 1em;
-  opacity: 0.95;
+  opacity: 0.9;
   position: relative;
   z-index: 1;
-  font-weight: 300;
-  letter-spacing: 0.5px;
-  text-shadow: 
-    0 1px 3px rgba(0, 0, 0, 0.2),
-    0 2px 6px rgba(0, 0, 0, 0.15);
+  font-weight: 400;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
 }
 
 .tabs {
@@ -178,13 +148,13 @@
 .tab-button {
   padding: 10px 16px;
   border: 2px solid var(--border-color);
-  background: var(--bg-primary);
-  color: var(--text-color);
-  border-radius: 6px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9em;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   animation: slideIn 0.3s ease;
   position: relative;
@@ -206,15 +176,15 @@
 
 .tab-button:hover {
   border-color: var(--primary-color);
-  color: var(--primary-color);
-  transform: translateY(-2px);
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .tab-button.active {
   background: var(--primary-color);
   color: white;
   border-color: var(--primary-color);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
   animation: tabActive 0.3s ease;
 }
 
@@ -253,7 +223,7 @@
 .content {
   padding: 30px;
   min-height: auto;
-  color: var(--text-color);
+  color: var(--text-primary);
   transition: all 0.4s ease;
   flex: 1;
   overflow-y: auto;

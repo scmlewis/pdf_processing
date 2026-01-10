@@ -17,6 +17,20 @@ import MetadataTab from './components/MetadataTab';
 import SplitTab from './components/SplitTab';
 import DeleteTab from './components/DeleteTab';
 import AddPageNumbersTab from './components/AddPageNumbersTab';
+import ConvertTab from './components/ConvertTab';
+import {
+  CombineIcon,
+  ExtractIcon,
+  ReorderIcon,
+  RotateIcon,
+  WatermarkIcon,
+  CompressIcon,
+  MetadataIcon,
+  SplitIcon,
+  DeleteIcon,
+  PageNumbersIcon,
+  ConvertIcon as ConvertIconSVG
+} from './components/Icons';
 
 function App() {
   const [activeTab, setActiveTab] = useState(null); // null = show home page
@@ -32,16 +46,17 @@ function App() {
   }, []);
 
   const tabs = [
-    { id: 'combine', label: '📎 Combine', icon: '📎', title: 'Combine PDF', component: CombineTab, shortcut: '1' },
-    { id: 'extract', label: '✂️ Extract', icon: '📄', title: 'Extract Pages', component: ExtractTab, shortcut: '2' },
-    { id: 'reorder', label: '↕️ Reorder', icon: '↕️', title: 'Reorder Pages', component: ReorderTab, shortcut: '3' },
-    { id: 'rotate', label: '🔄 Rotate', icon: '🔄', title: 'Rotate Pages', component: RotateTab, shortcut: '4' },
-    { id: 'watermark', label: '💧 Watermark', icon: '💧', title: 'Add Watermark', component: WatermarkTab, shortcut: '5' },
-    { id: 'compress', label: '📦 Compress', icon: '📦', title: 'Compress PDF', component: CompressTab, shortcut: '6' },
-    { id: 'metadata', label: '📋 Metadata', icon: '📋', title: 'Edit Metadata', component: MetadataTab, shortcut: '7' },
-    { id: 'split', label: '⚡ Split', icon: '✂️', title: 'Split PDF', component: SplitTab, shortcut: '8' },
-    { id: 'delete', label: '🗑️ Delete', icon: '🗑️', title: 'Delete Pages', component: DeleteTab, shortcut: '9' },
-    { id: 'addpagenumbers', label: '🔢 Page Numbers', icon: '🔢', title: 'Add Page Numbers', component: AddPageNumbersTab, shortcut: '0' }
+    { id: 'combine', label: 'Combine', Icon: CombineIcon, title: 'Combine PDF', component: CombineTab, shortcut: '1' },
+    { id: 'extract', label: 'Extract', Icon: ExtractIcon, title: 'Extract Pages', component: ExtractTab, shortcut: '2' },
+    { id: 'reorder', label: 'Reorder', Icon: ReorderIcon, title: 'Reorder Pages', component: ReorderTab, shortcut: '3' },
+    { id: 'rotate', label: 'Rotate', Icon: RotateIcon, title: 'Rotate Pages', component: RotateTab, shortcut: '4' },
+    { id: 'watermark', label: 'Watermark', Icon: WatermarkIcon, title: 'Add Watermark', component: WatermarkTab, shortcut: '5' },
+    { id: 'compress', label: 'Compress', Icon: CompressIcon, title: 'Compress PDF', component: CompressTab, shortcut: '6' },
+    { id: 'metadata', label: 'Metadata', Icon: MetadataIcon, title: 'Edit Metadata', component: MetadataTab, shortcut: '7' },
+    { id: 'split', label: 'Split', Icon: SplitIcon, title: 'Split PDF', component: SplitTab, shortcut: '8' },
+    { id: 'delete', label: 'Delete', Icon: DeleteIcon, title: 'Delete Pages', component: DeleteTab, shortcut: '9' },
+    { id: 'addpagenumbers', label: 'Page Numbers', Icon: PageNumbersIcon, title: 'Add Page Numbers', component: AddPageNumbersTab, shortcut: '0' },
+    { id: 'convert', label: 'Convert', Icon: ConvertIconSVG, title: 'Convert PDF', component: ConvertTab, shortcut: 'c' }
   ];
 
   // Handle tool selection from home page

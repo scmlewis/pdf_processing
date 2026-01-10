@@ -453,4 +453,64 @@ router.post('/add-page-numbers', upload.single('pdf'), handleMulterError, async 
   }
 });
 
+/**
+ * POST /api/pdf/convert-text
+ * Convert PDF to plain text
+ */
+router.post('/convert-text', upload.single('file'), handleMulterError, async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No PDF file uploaded' });
+    }
+
+    const result = await PDFProcessor.extractText(req.file.path);
+    
+    // Clean up uploaded file
+    await fs.unlink(req.file.path).catch(() => {});
+
+    res.json({
+      success: true,
+      text: result.text,
+      pageCount: result.pageCount,
+      info: result.info
+    });
+  } catch (error) {
+    console.error('Convert to text error:', error);
+    if (req.file) {
+      await fs.unlink(req.file.path).catch(() => {});
+    }
+    res.status(500).json({ error: error.message || 'Failed to convert PDF to text' });
+  }
+});
+
+/**
+ * POST /api/pdf/convert-markdown
+ * Convert PDF to Markdown format
+ */
+router.post('/convert-markdown', upload.single('file'), handleMulterError, async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No PDF file uploaded' });
+    }
+
+    const result = await PDFProcessor.convertToMarkdown(req.file.path);
+    
+    // Clean up uploaded file
+    await fs.unlink(req.file.path).catch(() => {});
+
+    res.json({
+      success: true,
+      markdown: result.markdown,
+      pageCount: result.pageCount,
+      info: result.info
+    });
+  } catch (error) {
+    console.error('Convert to markdown error:', error);
+    if (req.file) {
+      await fs.unlink(req.file.path).catch(() => {});
+    }
+    res.status(500).json({ error: error.message || 'Failed to convert PDF to Markdown' });
+  }
+});
+
 module.exports = router;

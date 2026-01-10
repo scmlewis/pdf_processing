@@ -6,6 +6,9 @@ const { PDFDocument, PDFPage, rgb, degrees } = require('pdf-lib');
 const fs = require('fs').promises;
 const { spawn } = require('child_process');
 
+// pdf-parse v2 exports PDFParse class
+const { PDFParse } = require('pdf-parse');
+
 class PDFProcessor {
   /**
    * Combine multiple PDF files into one - returns bytes instead of writing to disk
@@ -627,6 +630,336 @@ class PDFProcessor {
     } catch (error) {
       throw new Error(`Failed to add page numbers: ${error.message}`);
     }
+  }
+
+  /**
+   * Extract text from PDF - returns plain text string
+   * @param {string} inputPath - Path to PDF file
+   * @returns {Object} - { text, pageCount, info }
+   */
+  static async extractText(inputPath) {
+    try {
+      const dataBuffer = await fs.readFile(inputPath);
+      // pdf-parse v2 uses PDFParse class
+      const parser = new PDFParse({ data: dataBuffer });
+      const result = await parser.getText();
+      const info = await parser.getInfo();
+      
+      // Clean up text - remove page separators like "-- 4 of 120 --"
+      let cleanText = result.text || '';
+      cleanText = cleanText.replace(/\n?--\s*\d+\s+of\s+\d+\s*--\n?/gi, '\n');
+      cleanText = cleanText.replace(/\n{3,}/g, '\n\n').trim();
+      
+      return {
+        text: cleanText,
+        pageCount: result.total,
+        info: info.info || {}
+      };
+    } catch (error) {
+      throw new Error(`Failed to extract text: ${error.message}`);
+    }
+  }
+
+  /**
+   * Convert PDF to Markdown format with smart structure detection
+   * @param {string} inputPath - Path to PDF file
+   * @returns {Object} - { markdown, pageCount, info }
+   */
+  static async convertToMarkdown(inputPath) {
+    try {
+      const dataBuffer = await fs.readFile(inputPath);
+      // pdf-parse v2 uses PDFParse class
+      const parser = new PDFParse({ data: dataBuffer });
+      const result = await parser.getText();
+      const infoResult = await parser.getInfo();
+      
+      // Build markdown with metadata header
+      let markdown = '';
+      
+      // Add title if available
+      if (infoResult.info?.Title) {
+        markdown += `# ${infoResult.info.Title}\n\n`;
+      }
+      
+      // Add metadata section if available
+      const metadataLines = [];
+      if (infoResult.info?.Author) {
+        metadataLines.push(`**Author:** ${infoResult.info.Author}`);
+      }
+      if (infoResult.info?.Subject) {
+        metadataLines.push(`**Subject:** ${infoResult.info.Subject}`);
+      }
+      if (infoResult.info?.CreationDate) {
+        metadataLines.push(`**Created:** ${infoResult.info.CreationDate}`);
+      }
+      
+      if (metadataLines.length > 0) {
+        markdown += metadataLines.join('  \n') + '\n\n';
+        markdown += '---\n\n';
+      }
+      
+      // Process text content with smart Markdown formatting
+      let content = result.text || '';
+      
+      // Remove page number separators
+      content = content.replace(/\n?--\s*\d+\s+of\s+\d+\s*--\n?/gi, '\n');
+      
+      // Clean up the raw text
+      content = content
+        .replace(/\r\n/g, '\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+      
+      // Process content with enhanced structure detection
+      markdown += this._formatTextToMarkdown(content);
+      
+      return {
+        markdown,
+        pageCount: result.total,
+        info: infoResult.info || {}
+      };
+    } catch (error) {
+      throw new Error(`Failed to convert to Markdown: ${error.message}`);
+    }
+  }
+
+  /**
+   * Enhanced text to Markdown formatter with structure detection
+   * @private
+   */
+  static _formatTextToMarkdown(content) {
+    const lines = content.split('\n');
+    const formattedLines = [];
+    let inCodeBlock = false;
+    let inTable = false;
+    let tableBuffer = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmedLine = line.trim();
+      const prevLine = lines[i - 1]?.trim() || '';
+      const nextLine = lines[i + 1]?.trim() || '';
+      
+      // Skip empty lines but preserve paragraph breaks
+      if (!trimmedLine) {
+        if (inTable && tableBuffer.length > 0) {
+          // End table
+          formattedLines.push(...this._formatTable(tableBuffer));
+          tableBuffer = [];
+          inTable = false;
+        }
+        formattedLines.push('');
+        continue;
+      }
+      
+      // Detect table rows (lines with multiple tab/space separated columns)
+      const tabCount = (trimmedLine.match(/\t/g) || []).length;
+      const hasMultipleColumns = tabCount >= 2 || /\s{3,}/.test(trimmedLine);
+      if (hasMultipleColumns && !inCodeBlock) {
+        inTable = true;
+        tableBuffer.push(trimmedLine);
+        continue;
+      } else if (inTable && tableBuffer.length > 0) {
+        formattedLines.push(...this._formatTable(tableBuffer));
+        tableBuffer = [];
+        inTable = false;
+      }
+      
+      // Detect code blocks (lines starting with significant indentation and code chars)
+      const leadingSpaces = line.length - line.trimStart().length;
+      const hasCodeChars = /[{}();=<>\[\]`]/.test(trimmedLine);
+      if (leadingSpaces >= 4 && hasCodeChars) {
+        if (!inCodeBlock) {
+          formattedLines.push('```');
+          inCodeBlock = true;
+        }
+        formattedLines.push(trimmedLine);
+        continue;
+      } else if (inCodeBlock) {
+        formattedLines.push('```');
+        inCodeBlock = false;
+      }
+      
+      // Detect headings based on various heuristics
+      const headingResult = this._detectHeading(trimmedLine, prevLine, nextLine, i === 0);
+      if (headingResult) {
+        formattedLines.push(headingResult);
+        continue;
+      }
+      
+      // Detect bullet points
+      if (/^[-*•◦▪►→]\s+/.test(trimmedLine)) {
+        const bulletContent = trimmedLine.replace(/^[-*•◦▪►→]\s+/, '');
+        formattedLines.push(`- ${bulletContent}`);
+        continue;
+      }
+      
+      // Detect numbered lists
+      if (/^(\d+|[a-zA-Z])[.)]\s+/.test(trimmedLine)) {
+        const match = trimmedLine.match(/^(\d+|[a-zA-Z])[.)]\s+(.*)$/);
+        if (match) {
+          const num = isNaN(match[1]) ? '1' : match[1];
+          formattedLines.push(`${num}. ${match[2]}`);
+          continue;
+        }
+      }
+      
+      // Detect blockquotes (lines starting with > or indented quotes)
+      if (/^[">]\s+/.test(trimmedLine) || /^["']/.test(trimmedLine)) {
+        formattedLines.push(`> ${trimmedLine.replace(/^[">]\s*/, '')}`);
+        continue;
+      }
+      
+      // Detect horizontal rules (lines of dashes, equals, underscores)
+      if (/^[-=_]{3,}$/.test(trimmedLine)) {
+        formattedLines.push('---');
+        continue;
+      }
+      
+      // Detect emphasis patterns
+      let processedLine = trimmedLine;
+      // Bold for ALL CAPS words (more than 2 chars)
+      processedLine = processedLine.replace(/\b([A-Z]{3,})\b/g, (match) => {
+        // Don't bold common acronyms
+        const commonAcronyms = ['PDF', 'HTML', 'CSS', 'API', 'URL', 'HTTP', 'HTTPS', 'JSON', 'XML', 'SQL', 'USA', 'UK', 'EU'];
+        return commonAcronyms.includes(match) ? match : `**${match}**`;
+      });
+      
+      // Regular paragraph text
+      formattedLines.push(processedLine);
+    }
+    
+    // Close any open code block
+    if (inCodeBlock) {
+      formattedLines.push('```');
+    }
+    
+    // Process remaining table buffer
+    if (tableBuffer.length > 0) {
+      formattedLines.push(...this._formatTable(tableBuffer));
+    }
+    
+    // Join and clean up
+    let result = formattedLines.join('\n');
+    
+    // Clean up excessive empty lines
+    result = result.replace(/\n{3,}/g, '\n\n');
+    
+    // Ensure proper spacing around headings
+    result = result.replace(/([^\n])\n(#{1,6}\s)/g, '$1\n\n$2');
+    result = result.replace(/(#{1,6}[^\n]+)\n([^#\n])/g, '$1\n\n$2');
+    
+    // Ensure proper spacing around code blocks
+    result = result.replace(/([^\n])\n```/g, '$1\n\n```');
+    result = result.replace(/```\n([^\n])/g, '```\n\n$1');
+    
+    return result;
+  }
+
+  /**
+   * Detect if a line is a heading and return formatted heading or null
+   * @private
+   */
+  static _detectHeading(line, prevLine, nextLine, isFirstLine) {
+    const len = line.length;
+    
+    // Skip if too long for a heading
+    if (len > 100) return null;
+    
+    // Skip if ends with typical sentence punctuation
+    if (/[.,:;]$/.test(line)) return null;
+    
+    const isAllCaps = line === line.toUpperCase() && /[A-Z]/.test(line);
+    const isPrevEmpty = !prevLine;
+    const isNextEmpty = !nextLine;
+    const hasNumbers = /^\d/.test(line);
+    
+    // Chapter/Section patterns
+    if (/^(Chapter|Section|Part|Module|Unit|Lesson)\s+\d+/i.test(line)) {
+      return `## ${line}`;
+    }
+    
+    // Numbered headings like "1. Introduction" or "1.1 Overview"
+    if (/^\d+(\.\d+)*\s+[A-Z]/.test(line) && len < 80) {
+      const depth = (line.match(/\./g) || []).length;
+      const prefix = '#'.repeat(Math.min(depth + 2, 6));
+      return `${prefix} ${line}`;
+    }
+    
+    // All caps headings (likely major sections)
+    if (isAllCaps && len > 3 && len < 60 && isPrevEmpty) {
+      return `## ${line}`;
+    }
+    
+    // Title Case headings (short, followed by empty line)
+    if (len < 60 && (isPrevEmpty || isFirstLine) && isNextEmpty) {
+      const words = line.split(/\s+/);
+      if (words.length >= 2 && words.length <= 10) {
+        const lowercaseWords = ['a', 'an', 'the', 'and', 'or', 'but', 'of', 'in', 'on', 'at', 'to', 'for', 'with', 'by', 'from', 'as'];
+        const isTitleCase = words.every((w, idx) => {
+          if (idx === 0) return /^[A-Z0-9]/.test(w);
+          if (lowercaseWords.includes(w.toLowerCase())) return true;
+          return /^[A-Z0-9]/.test(w);
+        });
+        if (isTitleCase) {
+          return `### ${line}`;
+        }
+      }
+    }
+    
+    // Questions as headings (FAQ style)
+    if (/^(What|Why|How|When|Where|Who|Which|Can|Do|Does|Is|Are|Will|Should)\s+/i.test(line) && line.endsWith('?')) {
+      return `### ${line}`;
+    }
+    
+    return null;
+  }
+
+  /**
+   * Format table buffer into Markdown table
+   * @private
+   */
+  static _formatTable(rows) {
+    if (rows.length === 0) return [];
+    
+    // Split rows into columns
+    const splitRows = rows.map(row => {
+      // Try tab first, then multiple spaces
+      let cols = row.split(/\t+/);
+      if (cols.length <= 1) {
+        cols = row.split(/\s{3,}/);
+      }
+      return cols.map(c => c.trim()).filter(c => c);
+    });
+    
+    // Find max column count
+    const maxCols = Math.max(...splitRows.map(r => r.length));
+    if (maxCols < 2) {
+      // Not a table, return as regular lines
+      return rows;
+    }
+    
+    // Normalize all rows to same column count
+    const normalizedRows = splitRows.map(row => {
+      while (row.length < maxCols) row.push('');
+      return row;
+    });
+    
+    // Build markdown table
+    const result = [];
+    
+    // Header row
+    result.push('| ' + normalizedRows[0].join(' | ') + ' |');
+    
+    // Separator row
+    result.push('| ' + normalizedRows[0].map(() => '---').join(' | ') + ' |');
+    
+    // Data rows
+    for (let i = 1; i < normalizedRows.length; i++) {
+      result.push('| ' + normalizedRows[i].join(' | ') + ' |');
+    }
+    
+    return result;
   }
 }
 

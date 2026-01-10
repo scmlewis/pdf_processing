@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './UserGuide.css';
+import { HelpIcon, CloseIcon, DocumentIcon } from './Icons';
 
 function UserGuide() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -116,20 +117,25 @@ function UserGuide() {
         onClick={() => setIsExpanded(!isExpanded)}
         title="Click to view user instructions"
       >
-        <span className="help-icon">?</span>
+        <HelpIcon className="help-icon" />
       </button>
 
       {isExpanded && (
         <div className="guide-modal-overlay" onClick={() => setIsExpanded(false)}>
           <div className="guide-panel" onClick={(e) => e.stopPropagation()}>
             <div className="guide-header">
-              <h2>📖 PDF Processor User Guide</h2>
-              <p className="guide-subtitle">Learn how to use each feature</p>
+              <div className="guide-header-content">
+                <DocumentIcon className="guide-header-icon" />
+                <div>
+                  <h2>PDF Processor User Guide</h2>
+                  <p className="guide-subtitle">Learn how to use each feature</p>
+                </div>
+              </div>
               <button 
                 className="guide-close-x"
                 onClick={() => setIsExpanded(false)}
               >
-                ✕
+                <CloseIcon className="w-5 h-5" />
               </button>
             </div>
 

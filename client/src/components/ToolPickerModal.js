@@ -1,5 +1,18 @@
 import React from 'react';
 import './ToolPickerModal.css';
+import {
+  CombineIcon,
+  CompressIcon,
+  SplitIcon,
+  ReorderIcon,
+  RotateIcon,
+  ExtractIcon,
+  DeleteIcon,
+  WatermarkIcon,
+  PageNumbersIcon,
+  MetadataIcon,
+  PDFIcon
+} from './Icons';
 
 const ToolPickerModal = ({ files, onSelectTool, onClose }) => {
   const fileCount = files?.length || 0;
@@ -9,70 +22,70 @@ const ToolPickerModal = ({ files, onSelectTool, onClose }) => {
   const availableTools = [
     {
       id: 'combine',
-      icon: '📎',
+      Icon: CombineIcon,
       title: 'Combine',
       description: 'Merge files into one PDF',
       recommended: fileCount > 1
     },
     {
       id: 'compress',
-      icon: '📦',
+      Icon: CompressIcon,
       title: 'Compress',
       description: 'Reduce file size',
       recommended: fileCount === 1
     },
     {
       id: 'split',
-      icon: '✂️',
+      Icon: SplitIcon,
       title: 'Split',
       description: 'Split into multiple PDFs',
       recommended: false
     },
     {
       id: 'reorder',
-      icon: '↕️',
+      Icon: ReorderIcon,
       title: 'Reorder',
       description: 'Rearrange pages',
       recommended: false
     },
     {
       id: 'rotate',
-      icon: '🔄',
+      Icon: RotateIcon,
       title: 'Rotate',
       description: 'Rotate pages',
       recommended: false
     },
     {
       id: 'extract',
-      icon: '📄',
+      Icon: ExtractIcon,
       title: 'Extract',
       description: 'Extract specific pages',
       recommended: false
     },
     {
       id: 'delete',
-      icon: '🗑️',
+      Icon: DeleteIcon,
       title: 'Delete Pages',
       description: 'Remove unwanted pages',
       recommended: false
     },
     {
       id: 'watermark',
-      icon: '💧',
+      Icon: WatermarkIcon,
       title: 'Watermark',
       description: 'Add watermark',
       recommended: false
     },
     {
       id: 'addpagenumbers',
-      icon: '🔢',
+      Icon: PageNumbersIcon,
       title: 'Page Numbers',
       description: 'Add page numbers',
       recommended: false
     },
     {
       id: 'metadata',
-      icon: '📋',
+      Icon: MetadataIcon,
       title: 'Metadata',
       description: 'Edit PDF properties',
       recommended: false
@@ -107,24 +120,27 @@ const ToolPickerModal = ({ files, onSelectTool, onClose }) => {
         </button>
 
         <div className="tool-picker-header">
-          <div className="file-preview-icon">📄</div>
+          <PDFIcon className="file-preview-icon" />
           <h2>Choose an action</h2>
           <p className="file-name">{fileName}</p>
         </div>
 
         <div className="tool-picker-grid">
-          {sortedTools.map((tool) => (
-            <button
-              key={tool.id}
-              className={`tool-picker-item ${tool.recommended ? 'recommended' : ''}`}
-              onClick={() => handleToolSelect(tool.id)}
-            >
-              {tool.recommended && <span className="recommended-badge">Recommended</span>}
-              <span className="tool-picker-icon">{tool.icon}</span>
-              <span className="tool-picker-title">{tool.title}</span>
-              <span className="tool-picker-desc">{tool.description}</span>
-            </button>
-          ))}
+          {sortedTools.map((tool) => {
+            const IconComponent = tool.Icon;
+            return (
+              <button
+                key={tool.id}
+                className={`tool-picker-item ${tool.recommended ? 'recommended' : ''}`}
+                onClick={() => handleToolSelect(tool.id)}
+              >
+                {tool.recommended && <span className="recommended-badge">Recommended</span>}
+                <IconComponent className="tool-picker-icon" />
+                <span className="tool-picker-title">{tool.title}</span>
+                <span className="tool-picker-desc">{tool.description}</span>
+              </button>
+            );
+          })}
         </div>
 
         <div className="tool-picker-footer">

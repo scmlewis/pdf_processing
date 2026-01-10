@@ -1,5 +1,21 @@
 import React, { useState, useCallback } from 'react';
 import './HomePage.css';
+import {
+  CombineIcon,
+  SplitIcon,
+  ReorderIcon,
+  DeleteIcon,
+  RotateIcon,
+  CompressIcon,
+  ExtractIcon,
+  WatermarkIcon,
+  PageNumbersIcon,
+  MetadataIcon,
+  ConvertIcon,
+  ShieldCheckIcon,
+  LightningIcon,
+  PDFIcon
+} from './Icons';
 
 const HomePage = ({ onSelectTool, onFilesDropped }) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -11,28 +27,28 @@ const HomePage = ({ onSelectTool, onFilesDropped }) => {
       tools: [
         {
           id: 'combine',
-          icon: '📎',
+          Icon: CombineIcon,
           title: 'Combine PDF',
           description: 'Merge multiple PDF files into a single document. Drag and drop to reorder before combining.',
           color: '#10b981'
         },
         {
           id: 'split',
-          icon: '✂️',
+          Icon: SplitIcon,
           title: 'Split PDF',
           description: 'Extract pages or split a PDF into multiple smaller documents.',
           color: '#3b82f6'
         },
         {
           id: 'reorder',
-          icon: '↕️',
+          Icon: ReorderIcon,
           title: 'Reorder Pages',
           description: 'Rearrange pages in your PDF with an intuitive drag-and-drop interface.',
           color: '#8b5cf6'
         },
         {
           id: 'delete',
-          icon: '🗑️',
+          Icon: DeleteIcon,
           title: 'Delete Pages',
           description: 'Remove unwanted pages from your PDF document quickly and easily.',
           color: '#ef4444'
@@ -44,21 +60,21 @@ const HomePage = ({ onSelectTool, onFilesDropped }) => {
       tools: [
         {
           id: 'rotate',
-          icon: '🔄',
+          Icon: RotateIcon,
           title: 'Rotate Pages',
           description: 'Rotate individual pages or entire documents to the correct orientation.',
           color: '#f59e0b'
         },
         {
           id: 'compress',
-          icon: '📦',
+          Icon: CompressIcon,
           title: 'Compress PDF',
           description: 'Reduce file size while maintaining quality. Perfect for email attachments.',
           color: '#06b6d4'
         },
         {
           id: 'extract',
-          icon: '📄',
+          Icon: ExtractIcon,
           title: 'Extract Pages',
           description: 'Extract specific pages or page ranges into a new PDF document.',
           color: '#ec4899'
@@ -70,24 +86,36 @@ const HomePage = ({ onSelectTool, onFilesDropped }) => {
       tools: [
         {
           id: 'watermark',
-          icon: '💧',
+          Icon: WatermarkIcon,
           title: 'Add Watermark',
           description: 'Protect your documents with custom text or image watermarks.',
           color: '#14b8a6'
         },
         {
           id: 'addpagenumbers',
-          icon: '🔢',
+          Icon: PageNumbersIcon,
           title: 'Page Numbers',
           description: 'Add page numbers with customizable position, format, and styling.',
           color: '#a855f7'
         },
         {
           id: 'metadata',
-          icon: '📋',
+          Icon: MetadataIcon,
           title: 'Edit Metadata',
           description: 'View and edit PDF properties like title, author, and keywords.',
           color: '#64748b'
+        }
+      ]
+    },
+    {
+      name: 'Convert',
+      tools: [
+        {
+          id: 'convert',
+          Icon: ConvertIcon,
+          title: 'PDF to Text/Markdown',
+          description: 'Convert PDF documents to plain text or Markdown format for easy editing.',
+          color: '#0ea5e9'
         }
       ]
     }
@@ -174,15 +202,15 @@ const HomePage = ({ onSelectTool, onFilesDropped }) => {
         </p>
         <div className="hero-features">
           <span className="feature-badge">
-            <span className="feature-icon">🔒</span>
+            <ShieldCheckIcon className="feature-icon" />
             100% Secure
           </span>
           <span className="feature-badge">
-            <span className="feature-icon">⚡</span>
+            <LightningIcon className="feature-icon" />
             Lightning Fast
           </span>
           <span className="feature-badge">
-            <span className="feature-icon">💻</span>
+            <PDFIcon className="feature-icon" />
             Works Offline
           </span>
         </div>
@@ -193,28 +221,31 @@ const HomePage = ({ onSelectTool, onFilesDropped }) => {
           <div key={category.name} className="tool-category">
             <h2 className="category-title">{category.name}</h2>
             <div className="tools-grid">
-              {category.tools.map((tool) => (
-                <button
-                  key={tool.id}
-                  className="tool-card"
-                  onClick={() => onSelectTool(tool.id)}
-                  style={{ '--tool-color': tool.color }}
-                >
-                  <div className="tool-icon-wrapper">
-                    <span className="tool-icon">{tool.icon}</span>
-                    <div className="tool-icon-bg"></div>
-                  </div>
-                  <div className="tool-content">
-                    <h3 className="tool-title">{tool.title}</h3>
-                    <p className="tool-description">{tool.description}</p>
-                  </div>
-                  <div className="tool-arrow">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
-                  </div>
-                </button>
-              ))}
+              {category.tools.map((tool) => {
+                const IconComponent = tool.Icon;
+                return (
+                  <button
+                    key={tool.id}
+                    className="tool-card"
+                    onClick={() => onSelectTool(tool.id)}
+                    style={{ '--tool-color': tool.color }}
+                  >
+                    <div className="tool-icon-wrapper">
+                      <IconComponent className="tool-icon" />
+                      <div className="tool-icon-bg"></div>
+                    </div>
+                    <div className="tool-content">
+                      <h3 className="tool-title">{tool.title}</h3>
+                      <p className="tool-description">{tool.description}</p>
+                    </div>
+                    <div className="tool-arrow">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                      </svg>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         ))}

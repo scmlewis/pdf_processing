@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './SettingsPanel.css';
+import { SettingsIcon, CloseIcon } from './Icons';
 
 function SettingsPanel() {
   const [isOpen, setIsOpen] = useState(false);
@@ -33,7 +34,7 @@ function SettingsPanel() {
         onClick={() => setIsOpen(!isOpen)}
         title="Settings"
       >
-        ⚙️
+        <SettingsIcon className="w-6 h-6" />
       </button>
 
       {isOpen && (
@@ -44,12 +45,15 @@ function SettingsPanel() {
         <div className="settings-modal-overlay" onClick={() => setIsOpen(false)}>
           <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
             <div className="settings-header">
-              <h2>⚙️ Settings</h2>
+              <div className="settings-header-content">
+                <SettingsIcon className="settings-header-icon" />
+                <h2>Settings</h2>
+              </div>
               <button
                 className="settings-close"
                 onClick={() => setIsOpen(false)}
               >
-                ✕
+                <CloseIcon className="w-5 h-5" />
               </button>
             </div>
 
@@ -106,7 +110,7 @@ function SettingsPanel() {
 
               {/* Storage Info */}
               <div className="settings-group info-group">
-                <h3>ℹ️ Information</h3>
+                <h3>Information</h3>
                 <p className="info-text">
                   • All files are processed on the server
                 </p>
@@ -120,7 +124,7 @@ function SettingsPanel() {
 
               {/* Author Info */}
               <div className="settings-group info-group">
-                <h3>👨‍💻 About</h3>
+                <h3>About</h3>
                 <p className="info-text">
                   PDF Processor - An open-source PDF manipulation tool
                 </p>

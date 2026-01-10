@@ -81,9 +81,10 @@
 }
 
 .file-preview-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  display: block;
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 1rem;
+  color: var(--accent-primary, #10b981);
 }
 
 .tool-picker-header h2 {
@@ -154,7 +155,9 @@
 }
 
 .tool-picker-icon {
-  font-size: 1.75rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--accent-primary, #10b981);
 }
 
 .tool-picker-title {
